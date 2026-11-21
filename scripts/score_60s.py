@@ -120,13 +120,13 @@ def build_map(test_xy, origin, use_deskew, radius=25.0, every=4, voxel=0.2):
 
 
 # ---------- ICP ----------
-def icp_point_to_plane(scan, T, cloud, normals, tree, iters=30, huber=0.1):
+def icp_point_to_plane(scan, T, cloud, normals, tree, iters=30, huber=0.1, first_radius=2.0):
     """Slide `scan` (lidar frame) onto the map, starting from pose T. Returns (pose, ok).
     Small rotations are taken about the lidar's own position (not the map origin, which can be
     hundreds of metres away). Huber weights stop odd points (snowflakes, parked cars that moved)
     from pulling too hard: residuals above `huber` metres count less."""
     for n in range(iters):
-        max_d = 2.0 if n < 10 else (1.0 if n < 20 else 0.5)  # match radius shrinks as it settles
+        max_d = first_radius if n < 10 else (1.0 if n < 20 else 0.5)  # match radius shrinks as it settles
         moved = scan @ T[:3, :3].T + T[:3, 3]
         d, j = tree.query(moved, distance_upper_bound=max_d)
         ok = np.isfinite(d)
@@ -157,6 +157,7 @@ def main():
     ap.add_argument("--yaw", type=float, default=0.0, help="and turn it this many degrees")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--no-deskew", action="store_true", help="skip motion compensation (to compare)")
+    ap.add_argument("--save", help="optional CSV path: one row per test scan (to combine runs)")
     a = ap.parse_args()
 
     t0 = time.time()
@@ -200,6 +201,11 @@ def main():
 
     lat, lon, up, yaw_err = map(np.array, (lat, lon, up, yaw_err))
     recovered = (np.hypot(lat, lon) < 0.3) & (np.abs(yaw_err) < 2.0) & np.array(ok_all)
+    if a.save:
+        with open(a.save, "w") as f:
+            f.write("scan_time_us,lateral_m,longitudinal_m,height_m,heading_deg,icp_ok,recovered\n")
+            for i, k in enumerate(window):
+                f.write(f"{times[k]},{lat[i]:.4f},{lon[i]:.4f},{up[i]:.4f},{yaw_err[i]:.4f},{int(ok_all[i])},{int(recovered[i])}\n")
     rmse = lambda x: 100 * np.sqrt(np.mean(x ** 2))  # noqa: E731
     print(f"test: {a.test}, {len(window)} scans over {a.seconds:.0f} s, start off {a.offset} m / {a.yaw} deg, "
           f"deskew {'on' if use_deskew else 'off'}")
