@@ -1,0 +1,1137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Snowbound</title>
+<meta name="description" content="Snow shrinks a self-driving car's room for error. Half a second of lidar (five sweeps) from a Toronto snowstorm, and 271 spots measured on both days.">
+<meta property="og:title" content="Snowbound">
+<meta property="og:description" content="Snow shrinks a self-driving car's room for error. 271 spots on a Toronto loop, in a snowstorm and a week earlier.">
+<meta property="og:image" content="https://wilsawn.github.io/snowbound/media/og.jpg">
+<meta property="og:url" content="https://wilsawn.github.io/snowbound/">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0a0d12">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0d12'/%3E%3Ccircle cx='16' cy='16' r='9.5' fill='none' stroke='%23d9a35a' stroke-width='1.5'/%3E%3Crect x='13' y='10' width='6' height='12' rx='1.5' fill='%23e9eef4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"></noscript>
+<link rel="preload" as="image" href="media/hero_cam.jpg" fetchpriority="high">
+<style>
+  /* Fallback faces with matched metrics so the words do not jump when the web fonts land */
+  @font-face{font-family:"Familjen Fallback";src:local("Helvetica Neue"),local("Arial");size-adjust:97%;ascent-override:92%;descent-override:24%;line-gap-override:0%}
+  @font-face{font-family:"Plex Fallback";src:local("Menlo"),local("Consolas"),local("Courier New");size-adjust:94%}
+
+  /* Type: five sizes on every screen. 16 labels, ticks, legends, captions and header (measured 15 px tall on screen); 17 body; 26 beat heads; 52 the thesis and the one display number; mono 15 for the sensor stamp only. */
+  :root{
+    --bg:#0a0d12; --bg-rgb:10,13,18; --ink:#eef1f5; --ink2:#bcc4ce; --ink3:#aab2bd;
+    --snow:#b9cadb; --storm:#d9a35a; --clear:#e9eef4; --fail:#4a515b; --line:rgba(255,255,255,.14);
+    --sans:"Familjen Grotesk","Familjen Fallback",system-ui,sans-serif; --mono:"IBM Plex Mono","Plex Fallback",ui-monospace,monospace;
+    --label:16px; --body:17px; --lead:26px; --display:52px; --mono-size:15px;
+    --pad:20px; --col:100%; --hdr:60px; --scanx:540px;
+    --move:600ms; --ease:cubic-bezier(.77,0,.175,1); --appear:cubic-bezier(.32,.72,0,1);
+    --pg-bg:var(--bg); --pg-bg-rgb:var(--bg-rgb); --pg-ink:var(--ink); --pg-ink2:var(--ink2); --pg-ink3:var(--ink3); --pg-line:var(--line);
+  }
+  @media (min-width:1000px){ :root{ --pad:56px; --col:460px; } }
+  @media (prefers-color-scheme:light){
+    :root{ --pg-bg:#f2f0eb; --pg-bg-rgb:242,240,235; --pg-ink:#151a21; --pg-ink2:#3f4752; --pg-ink3:#5d6672; --pg-line:rgba(0,0,0,.14); }
+  }
+  @media (prefers-reduced-motion:reduce){ :root{ --move:0ms } }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{background:var(--bg);scroll-behavior:auto}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-variant-numeric:tabular-nums;overflow-x:hidden}
+  a{color:inherit}
+  b,strong{font-weight:500;color:var(--ink)}
+  .lead{font-size:var(--lead);line-height:1.22;font-weight:500;letter-spacing:-.005em;text-wrap:balance;color:var(--ink)}
+  .body{font-size:var(--body);line-height:1.5;color:var(--ink2);margin-top:14px;text-wrap:pretty}
+  .label{font-size:var(--label);line-height:1.45;color:var(--ink3);margin-top:14px}
+  .label b{color:var(--ink2)}
+  .display{font-size:var(--display);line-height:1.04;font-weight:500;letter-spacing:-.022em;text-wrap:balance;color:var(--ink)}
+
+  /* header: wordmark, place and date (follows the scan shown), the open-in-browser link when inside an app. Solid page colour so it never sits over body copy. */
+  header{position:fixed;left:0;right:0;top:0;height:var(--hdr);z-index:20;padding:0 var(--pad);display:flex;justify-content:space-between;align-items:center;font-size:var(--label);color:var(--ink2);pointer-events:none;background:var(--bg);transition:color .2s,background .2s}
+  header b{color:var(--ink);font-weight:500}
+  header span{display:flex;gap:18px;align-items:center}
+  header .where{display:none}
+  @media (min-width:600px){ header .where{display:inline} }
+  header a{pointer-events:auto;text-decoration:none;color:var(--ink);padding:10px 14px;margin-right:-14px;border:1px solid var(--line);border-radius:8px;display:none;min-height:44px;align-items:center}
+  body.inapp header a{display:inline-flex}
+  body.on-light header{color:var(--pg-ink2);background:var(--pg-bg)}
+  body.on-light header b{color:var(--pg-ink)}
+  body.poster header,body.poster .beats,body.poster #pins,body.poster #fade,body.poster #cover,body.poster .flow{display:none}
+
+  /* the pinned half: one stage that sticks while six beats scroll over it */
+  .pinned{position:relative;isolation:isolate}
+  .stage{position:sticky;top:0;height:100dvh;min-height:560px;overflow:hidden;z-index:0;background:var(--bg)}
+  #scan{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #poster{position:absolute;left:50%;top:45%;width:375vw;height:375vw;display:none;opacity:.92;transform:translate(-50%,-50%)}
+  @media (min-width:1000px){ #poster{left:0;top:0;width:100%;height:100%;object-fit:cover;transform:translateX(20%)} }
+  .stage.nogl #scan{display:none}
+  .stage.nogl #poster{display:block}
+  .stage.nogl #pin-snow,.stage.nogl #pin-road,.stage.nogl #pin-r1,.stage.nogl #pin-r2{display:none}
+  #pushfb{position:absolute;inset:0;width:100%;height:100%;display:none;pointer-events:none;z-index:1}
+  .stage.nogl.push #pushfb{display:block}
+  #fade{position:absolute;inset:0;pointer-events:none;z-index:2;transition:opacity .3s;
+    background:linear-gradient(to top, rgba(var(--bg-rgb),.97) 0, rgba(var(--bg-rgb),.93) 34%, rgba(var(--bg-rgb),0) 62%)}
+  @media (min-width:1000px){
+    #fade{background:linear-gradient(to right, rgba(var(--bg-rgb),.97) 0, rgba(var(--bg-rgb),.93) 440px, rgba(var(--bg-rgb),0) 820px)}
+  }
+  .stage.dim #fade{opacity:.6}
+  #cover{position:absolute;inset:0;pointer-events:none;z-index:2;background:rgba(var(--bg-rgb),.8);opacity:0;transition:opacity .3s}
+  .stage.result #cover{opacity:.72}
+
+  /* the height legend: in the text column, just above the words, on every scan beat and on the clip. One left edge on every size. */
+  .lg{display:flex;gap:8px;align-items:center;font-size:var(--label);color:var(--ink2);margin-bottom:14px;line-height:1}
+  .lg i{display:block;width:56px;height:6px;border-radius:3px;background:linear-gradient(to right, #5c6775 0, #e9eef4 100%)}
+  @media (min-width:1000px){ .lg{margin-bottom:18px} }
+
+  /* pinned labels sit on the thing they name */
+  #pins{position:absolute;inset:0;z-index:3;pointer-events:none}
+  .pin{position:absolute;font-size:var(--label);line-height:1.3;color:var(--ink);white-space:nowrap;opacity:0;transition:opacity .3s var(--appear);transform:translate(0,-50%);padding:3px 7px;border-radius:4px;background:rgba(var(--bg-rgb),.84)}
+  .pin::before{content:"";position:absolute;left:-14px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--ink)}
+  .pin.r{transform:translate(-100%,-50%)}
+  .pin.r::before{left:auto;right:-14px}
+  .pin.up{transform:translate(-50%,-100%)}
+  .pin.up::before{left:50%;margin-left:-3px;top:auto;margin-top:0;bottom:-14px}
+  .pin.dn{transform:translate(-50%,0);background:var(--bg)}
+  .pin.dn::before{left:50%;margin-left:-3px;top:-14px;margin-top:0}
+  .pin.snow::before{background:var(--snow)}
+  .pin.storm::before{background:var(--storm)}
+  .pin.on{opacity:1}
+  .pin small{display:block;font-size:var(--label);color:var(--ink2)}
+
+  /* six beats; each is 150 to 300vh tall, and each has a sticky layer the height of the screen */
+  .beats{position:relative;z-index:4;margin-top:-100dvh}
+  .beat{position:relative;height:200vh}
+  .beat.tall{height:300vh}
+  .sub{height:150vh;position:relative}
+  .layer{position:sticky;top:0;height:100dvh;min-height:560px;pointer-events:none}
+  .layer > *{pointer-events:auto}
+  .text{position:absolute;left:var(--pad);right:var(--pad);bottom:28px;max-width:var(--col)}
+  @media (min-width:1000px){ .text{right:auto;bottom:auto;top:50%;transform:translateY(-50%);width:var(--col)} }
+
+  /* beat 1: the dashcam frame tied to the scan */
+  #cam{position:absolute;z-index:1;left:var(--pad);top:calc(var(--hdr) + 4px);width:min(236px, 56vw);aspect-ratio:1600/1006;overflow:hidden;border-radius:6px;box-shadow:0 0 0 1px rgba(255,255,255,.14)}
+  #cam img{display:block;width:100%;height:100%;object-fit:cover}
+  #tie{position:absolute;width:1px;background:rgba(255,255,255,.4);z-index:1}
+  #tie::after{content:"";position:absolute;left:-2.5px;bottom:-3px;width:6px;height:6px;border-radius:50%;background:var(--ink)}
+  @media (min-width:1000px){ #cam{left:auto;width:min(38vw, 600px);top:calc(var(--hdr) + 8px)} }
+  .stage.nogl ~ .beats #tie{display:none}
+  .who{margin-top:14px;font-size:var(--label);color:var(--ink2)}
+  .who b{color:var(--ink)}
+  .sensor{margin-top:10px;font-family:var(--mono);font-size:var(--mono-size);color:var(--ink3);line-height:1.45}
+  .sensor .when{display:block;white-space:nowrap}
+  @media (max-width:999px){ .sensor .when{letter-spacing:-.03em} }
+
+  /* beat 4: the ten push marks, a quiet row in the text column */
+  .marks{display:flex;gap:6px;margin-top:16px;align-items:flex-end}
+  .marks div{flex:1 1 0;text-align:center;font-size:var(--label);color:var(--ink3);line-height:1.2}
+  .marks i{display:block;width:8px;height:8px;border-radius:50%;margin:0 auto 8px;border:1.5px solid var(--storm);background:var(--storm)}
+  .marks div.lost i{background:transparent}
+  .marks div.at b{color:var(--ink)}
+
+  /* beat 5: try it. One edge-to-edge figure split by a hairline (no boxes), the label on one line under each panel, the spot and size toggles as plain underlined text in the text column. */
+  #try{position:absolute;left:0;right:0;top:calc(var(--hdr) + 8px);display:flex;flex-direction:column}
+  .tryhead{padding:0 var(--pad)}
+  .tryhead .body{margin-top:8px}
+  .two{display:grid;grid-template-columns:1fr;margin-top:10px}
+  .scanbox{position:relative;width:100%;height:min(22dvh, 180px);overflow:hidden;background:var(--bg)}
+  .scanbox canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .scanbox svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+  .two .cap{font-size:var(--label);color:var(--ink2);line-height:1.4;padding:8px var(--pad) 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .two .cap b{color:var(--ink);font-weight:400}
+  #cap-storm{order:2} #box-clear{order:3;border-top:1px solid var(--line)} #cap-clear{order:4}
+  .ctl{padding:0;font-size:var(--label);color:var(--ink3)}
+  .ctl .row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .ctl .row > span{flex:0 0 44px}
+  .ctl .seg{display:flex;flex:1 1 auto;gap:2px}
+  .ctl .sizes{flex-basis:100%;justify-content:space-between;gap:0;margin-top:-10px}
+  .ctl button{border:0;background:none;padding:0 1px;min-height:44px;min-width:22px;color:var(--ink3);font:inherit;font-size:var(--label);cursor:pointer;text-decoration:underline;text-underline-offset:5px;text-decoration-color:var(--line);text-decoration-thickness:1px;transition:color .15s ease,text-decoration-color .15s ease}
+  .ctl button[aria-pressed="true"]{color:var(--ink);text-decoration-color:var(--storm);text-decoration-thickness:2px}
+  @media (min-width:1000px){
+    #try{left:var(--scanx);right:var(--pad);top:50%;transform:translateY(-50%)}
+    .tryhead{position:absolute;left:calc(var(--pad) - var(--scanx));top:50%;transform:translateY(-50%);width:var(--col);padding:0}
+    .two{grid-template-columns:1fr 1fr;margin-top:0}
+    .scanbox{height:clamp(420px, 66dvh, 760px)}
+    #box-clear{order:2;border-top:0;border-left:1px solid var(--line)} #cap-storm{order:3}
+    .two .cap{padding:12px 0 0 0}
+    #cap-clear{padding-left:17px}
+    .ctl{padding:0;margin-top:18px}
+    .ctl .row{gap:12px;flex-wrap:nowrap} .ctl .row > span{flex-basis:52px}
+    .ctl .seg{gap:6px} .ctl .sizes{flex-basis:auto;gap:0;margin-top:0}
+    .ctl button{padding:0 6px}
+  }
+
+  /* beat 6: the result. One display number; the two typical values sit on the strips. */
+  #b6 .layer{pointer-events:none}
+  #result{position:absolute;left:var(--pad);right:var(--pad);top:calc(var(--hdr) + 8px);bottom:20px;display:flex;flex-direction:column;justify-content:flex-start}
+  #result .num{margin-top:18px;font-size:var(--display);line-height:1;font-weight:500;letter-spacing:-.022em;color:var(--ink)}
+  #result .num small{display:block;font-size:var(--label);font-weight:400;letter-spacing:0;color:var(--ink2);margin-top:8px}
+  #result .body{margin-top:12px}
+  #chart{margin-top:16px}
+  #chart .row{display:flex;justify-content:space-between;font-size:var(--label);color:var(--ink2);line-height:1.4;margin-bottom:6px}
+  #chart .row b{color:var(--ink)}
+  #chart .row .s{color:var(--storm)}
+  #chart .strip{position:relative;height:56px;border-bottom:1px solid var(--line)}
+  #chart .strip.s{border-bottom:0;border-top:1px solid var(--line)}
+  #chart canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #chart .axis{display:flex;justify-content:space-between;font-size:var(--label);color:var(--ink3);line-height:1.4;padding:4px 0}
+  #chart .typ{position:absolute;left:0;right:0;border-top:1px dashed rgba(255,255,255,.35);font-size:var(--label);color:var(--ink2);line-height:1}
+  #chart .typ span{position:absolute;right:0;top:3px;padding:1px 4px 2px 6px;background:rgba(var(--bg-rgb),.85);border-radius:3px}
+  #chart .cap{margin-top:12px;font-size:var(--label);color:var(--ink2);line-height:1.45;max-width:760px}
+  #chart .cap b{color:var(--ink)}
+  #chart .cap .s{color:var(--storm)}
+  #chart .typ.s{border-top-color:rgba(217,163,90,.7)}
+  #chart .typ.s span{color:var(--storm)}
+  .after{margin-top:12px;font-size:var(--label);color:var(--ink3);line-height:1.45}
+  @media (max-width:999px){                                              /* phone: the two typical values sit outside the strips with no backing: 3 m+ just above the top strip, 2.5 m just under the storm strip (its offset set in drawBars) */
+    #chart{margin-top:30px}
+    #chart .typ span{background:none;padding:0;top:auto;bottom:4px}
+    #chart .typ.s span{bottom:auto}
+    #chart .cap{margin-top:34px}
+  }
+  @media (min-width:1000px){
+    #result{left:var(--pad);right:var(--pad);top:0;bottom:0;display:block}
+    #result .lede{position:absolute;left:0;top:50%;transform:translateY(-50%);width:var(--col)}
+    #chart{position:absolute;left:var(--scanx);right:0;top:50%;transform:translateY(calc(-50% + 36px));margin:0;padding-right:128px}
+    #chart .strip{height:27vh}
+    #chart .typ span{left:100%;right:auto;margin-left:10px;top:-10px;padding:0;background:none;white-space:nowrap}
+    #chart .cap{margin-top:14px}
+  }
+
+  /* normal flow below the scan */
+  .flow{position:relative;z-index:5;background:var(--bg)}
+  /* beat 7: the loop */
+  #b7{position:relative;height:100dvh;min-height:640px;overflow:hidden}
+  #loopbg{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:.22}
+  #loop{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #loop .lbl{font-size:var(--label);fill:var(--ink);font-family:var(--sans)}
+  #loop .lbl2{font-size:var(--label);fill:var(--ink2);font-family:var(--sans)}
+  #b7 .fade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top, rgba(var(--bg-rgb),.97) 0, rgba(var(--bg-rgb),.9) 24%, rgba(var(--bg-rgb),0) 40%)}
+  @media (min-width:1000px){ #b7 .fade{background:linear-gradient(to right, rgba(var(--bg-rgb),.97) 0, rgba(var(--bg-rgb),.93) 440px, rgba(var(--bg-rgb),0) 820px)} }
+  .key{display:flex;gap:16px;margin-top:12px;font-size:var(--label);color:var(--ink2);flex-wrap:wrap}
+  .key i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+
+  /* beat 8: twelve seconds at spot 002_011, both days. One figure: the clip's lidar half (the clip is 720 x 1280; never above 1 CSS px per clip pixel; its burned-in title stays cropped above the 538 px shown) with the camera half as an inset in its top right corner, square corners, b1's hairline. Desktop: 1 px per clip pixel, centred in the right column on the page colour, the opening scan behind it dimmed to near black. Phone: 360 px or the text width, at the text's left edge. */
+  #b8{position:relative;background:var(--bg);overflow:hidden;padding-top:calc(var(--hdr) + 8px)}   /* phone: the figure clears the fixed header when the beat is scrolled to its top */
+  #clipbg{position:absolute;inset:0;width:100%;height:100%;display:none;opacity:.14}
+  #clipfig{position:relative;z-index:2;width:min(360px, calc(100% - 2 * var(--pad)));margin:0 0 0 var(--pad);aspect-ratio:720/538;overflow:hidden;background:#000;box-shadow:0 0 0 1px rgba(255,255,255,.14)}
+  #clipfig video{position:absolute;left:0;bottom:0;width:100%;height:auto;display:block;cursor:pointer;background:#000}
+  #cam2{position:absolute;z-index:1;right:0;top:0;width:45%;aspect-ratio:720/640;overflow:hidden;background:#000;box-shadow:0 0 0 1px rgba(255,255,255,.14);cursor:pointer}
+  #cam2 canvas{display:block;width:100%;height:100%}
+  #b8 .fade{display:none}
+  #b8 .caption{padding:20px var(--pad) 28px;font-size:var(--label);color:var(--ink2);line-height:1.45;max-width:var(--col)}
+  #b8 .caption b{color:var(--ink)}
+  #b8 .caption .sensor{display:none}
+  @media (min-width:1000px){
+    #b8{height:100dvh;min-height:640px;padding-top:0}
+    #clipbg{display:block}
+    #b8 .fade{display:block;position:absolute;z-index:1;inset:0;pointer-events:none;background:linear-gradient(to right, rgba(var(--bg-rgb),.97) 0, rgba(var(--bg-rgb),.93) 440px, rgba(var(--bg-rgb),0) 820px)}
+    #clipfig{position:absolute;width:min(720px, calc(100% - var(--scanx) - var(--pad)));left:calc(var(--scanx) + (100% - var(--scanx) - var(--pad) - min(720px, 100% - var(--scanx) - var(--pad))) / 2);top:50%;transform:translateY(-50%);margin:0}
+    #cam2{width:37.5%}
+    #b8 .caption{position:absolute;z-index:3;left:var(--pad);top:50%;transform:translateY(-50%);padding:0;width:var(--col);font-size:var(--body)}
+    #b8 .caption .sensor{display:block}
+  }
+
+  /* beats 9 and 10: one column of words at the shared left edge; these two follow the system theme */
+  .page{background:var(--pg-bg);color:var(--pg-ink);padding:96px var(--pad) 0}
+  .page .inner{max-width:680px}
+  #b10{padding-bottom:0;position:relative;overflow:hidden}
+  #b10 .inner{position:relative;z-index:1}
+  #endfig{position:relative;height:38dvh;min-height:240px;margin:48px calc(-1 * var(--pad)) 0;background:var(--bg);overflow:hidden}
+  #endfig canvas,#endfig img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
+  #endfig img{display:none;opacity:.5}
+  body.nogl #endfig img{display:block}
+  body.nogl #endfig canvas{display:none}
+  #endfig::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom, rgba(var(--pg-bg-rgb),1) 0, rgba(var(--pg-bg-rgb),0) 120px)}
+  .page .lead{color:var(--pg-ink);margin-top:0}
+  .page .body{color:var(--pg-ink2)}
+  .page .body b{color:var(--pg-ink)}
+  .page .label{color:var(--pg-ink3)}
+  .page .label b{color:var(--pg-ink2)}
+  .page a{color:var(--pg-ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--pg-line)}
+  .page .block + .block{margin-top:48px}
+  .links{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px}
+  .links a{padding:10px 0;min-height:44px;display:inline-flex;align-items:center}
+  .credits{margin-top:48px;font-size:var(--label);line-height:1.5;color:var(--pg-ink3);max-width:680px}
+  .credits a{color:var(--pg-ink2)}
+  .fig{margin-top:40px}
+  .fig svg{display:block;width:100%;height:auto}
+  .fig .t{font-size:var(--label);fill:var(--pg-ink3);font-family:var(--sans)}
+  .fig .ti{font-size:var(--label);fill:var(--pg-ink2);font-family:var(--sans)}
+  .fig .bc{fill:var(--pg-ink2);opacity:.55}
+  .fig .bs{fill:var(--storm)}
+  .fig .ax{stroke:var(--pg-line)}
+  @media (min-width:1000px){
+    .page{padding:112px var(--pad) 0}
+    #b9 .inner{max-width:none;display:grid;grid-template-columns:680px minmax(0,1fr);column-gap:96px;align-items:start}
+    #b9 .prose{grid-column:1}
+    #b9 .fig{grid-column:2;margin-top:4px;position:sticky;top:calc(var(--hdr) + 36px)}
+    #b9{min-height:100dvh;padding-bottom:96px}
+    #b10{min-height:100dvh;padding-bottom:96px}
+    #endfig{position:absolute;left:max(50%, 784px);right:0;top:0;bottom:0;height:auto;min-height:0;margin:0}
+    #endfig::after{background:linear-gradient(to right, rgba(var(--pg-bg-rgb),1) 0, rgba(var(--pg-bg-rgb),0) 200px), linear-gradient(to bottom, rgba(var(--pg-bg-rgb),1) 0, rgba(var(--pg-bg-rgb),0) 240px)}
+  }
+  @media (min-width:1000px) and (prefers-color-scheme:light){
+    #endfig{top:112px;box-shadow:-1px 0 0 var(--pg-line)}
+    #endfig::after{background:none}
+  }
+
+  @media (prefers-reduced-motion:reduce){ .pin, .ctl button, #fade, #cover{transition:none} }
+</style>
+</head>
+<body>
+<header><b>Snowbound</b><span><span class="where" id="where">North Toronto, 26 Jan 2021, snowstorm</span><a id="openout" href="#" target="_blank" rel="noopener">Open in browser</a></span></header>
+
+<div class="pinned">
+  <div class="stage" id="stage">
+    <canvas id="scan" aria-label="Half a second of lidar (five sweeps) from above: the car at the centre, 200,000 laser hits, snow in the air drawn pale."></canvas>
+    <img id="poster" src="scan_poster.webp" alt="A still of the storm scan from above: the car at the centre, laser hits around it, snow in the air." width="1440" height="1440" loading="lazy">
+    <svg id="pushfb" aria-hidden="true"></svg>
+    <div id="pins">
+      <div class="pin r" id="pin-lidar">the lidar, from above</div>
+      <div class="pin" id="pin-cam">the camera, same moment</div>
+      <div class="pin snow" id="pin-snow">snow in the air</div>
+      <div class="pin" id="pin-road">the road</div>
+      <div class="pin r" id="pin-car">the car, true size</div>
+      <div class="pin storm" id="pin-r1">1.5 m<small>in the storm</small></div>
+      <div class="pin r" id="pin-r2">3 m+<small>a week earlier, no snow</small></div>
+    </div>
+    <div id="fade"></div>
+    <div id="cover"></div>
+  </div>
+
+  <div class="beats">
+    <section class="beat" id="b1" data-state="hero">
+      <div class="layer">
+        <figure id="cam"><img src="media/hero_cam.jpg" alt="The car's dashcam in the snowstorm: a wide road, two cars ahead, snow blowing across." width="1600" height="1006" fetchpriority="high"></figure>
+        <div id="tie"></div>
+        <div class="text">
+          <div class="lg" aria-hidden="true"><span>road</span><i></i><span>3 m</span></div>
+          <p class="lead">A laser scan of a Toronto street in a snowstorm, 26 Jan 2021.</p>
+          <p class="body">In a snowstorm, how far off can a self-driving car's guess of its own position be before it can no longer find itself on its map? I tested it on this street: I pushed the car's position guess off its map on purpose and let it find its way back. Room for error is the biggest push it recovered from.</p>
+          <p class="who"><b>Wilsawn "Delo" Dideh</b>, software engineer, Ottawa</p>
+          <p class="sensor" id="sensor">Velodyne Alpha Prime, 128 ch.<span class="when">Boreas, Toronto.</span></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="beat tall" id="b2">
+      <div class="sub" id="b2a" data-state="snow">
+        <div class="layer"><div class="text">
+          <div class="lg" aria-hidden="true"><span>road</span><i></i><span>3 m</span></div>
+          <p class="lead">23,332 of these 200,000 laser hits are flagged as snow. The street is still there behind them.</p>
+          <p class="body">This is half a second of lidar, five sweeps stacked. The car finds its way back by matching it to its map of the road. The snow is in the scan and not on the map, so the matcher has to see through it.</p>
+        </div></div>
+      </div>
+      <div class="sub" id="b2b" data-state="nosnow">
+        <div class="layer"><div class="text">
+          <div class="lg" aria-hidden="true"><span>road</span><i></i><span>3 m</span></div>
+          <p class="lead">Take the snow out and this is what the matcher has to line up: the road, the kerbs, the walls.</p>
+          <p class="body">Points coloured by height: dim on the road, light on walls and trees. The faint grid is 10 m.</p>
+        </div></div>
+      </div>
+    </section>
+
+    <section class="beat" id="b3" data-state="clear">
+      <div class="layer"><div class="text">
+        <div class="lg" aria-hidden="true"><span>road</span><i></i><span>3 m</span></div>
+        <p class="lead">Same spot, a week earlier, no snow falling.</p>
+        <p class="body">The car drove the same 7.9 km loop twice: in the storm, and seven days before with the road clear. This scan still has 9,905 points flagged as snow.</p>
+        <p class="sensor" id="sensor2">Velodyne Alpha Prime, 128 ch.<span class="when">Boreas, Toronto.</span></p>
+      </div></div>
+    </section>
+
+    <section class="beat" id="b4" data-state="push">
+      <div class="layer"><div class="text">
+        <div class="lg" aria-hidden="true"><span>road</span><i></i><span>3 m</span></div>
+        <p class="lead">At this spot the car came back from a 1.5 m push in the storm. With no snow, from 3 m+.</p>
+        <p class="body">Each size was pushed in 8 directions; it passes when 7 of 8 come back within 30 cm and 2 degrees. 3 m was the biggest push tried, so 3 m+ means it never failed. 3 m is about a parking space wide, 1.5 m about half of one.</p>
+        <div class="marks" id="marks" aria-label="The ten push sizes at this spot in the storm; a filled mark came back"></div>
+        <p class="label">The ten sizes in the storm at this spot, in metres: filled came back, hollow did not. With no snow every size came back.</p>
+      </div></div>
+    </section>
+
+    <section class="beat" id="b5" data-state="try">
+      <div class="layer">
+        <div id="try">
+          <div class="tryhead">
+            <p class="lead">Try it: pick a spot and a push.</p>
+            <p class="body">Real results, nothing simulated. Spot A is the spot above; B and C are two more on the loop. The ring is the push, with a tick at each of the 8 directions; the count is how many of the 8 came back on each day (which direction is not recorded).</p>
+            <div class="ctl">
+              <div class="row"><span>Spot</span><div class="seg" id="spots" role="group" aria-label="Pick a spot"></div></div>
+              <div class="row"><span>Push</span><div class="seg sizes" id="sizes" role="group" aria-label="Push size in metres"></div></div>
+            </div>
+          </div>
+          <div class="two">
+            <div class="scanbox" id="box-storm"><canvas id="cv-try-storm" aria-label="This spot from above in the storm, with the push ring at true scale"></canvas><svg id="ov-storm" aria-hidden="true"></svg></div>
+            <div class="scanbox" id="box-clear"><canvas id="cv-try-clear" aria-label="The same spot from above a week earlier, no snow, with the push ring at true scale"></canvas><svg id="ov-clear" aria-hidden="true"></svg></div>
+            <p class="cap" id="cap-storm">In the storm</p>
+            <p class="cap" id="cap-clear">No snow a week earlier</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="beat" id="b6" data-state="result">
+      <div class="layer">
+        <div id="result">
+          <div class="lede">
+            <p class="display">Snow shrinks a self-driving car's room for error.</p>
+            <p class="num">111 of 271<small>spots where snow cut the room</small></p>
+            <p class="body">The typical spot went from 3 m+ with no snow to 2.5 m in the storm.</p>
+          </div>
+          <div id="chart" aria-label="Room for error at every spot around the loop, both days">
+            <div class="strip"><canvas id="cv-clear"></canvas><div class="typ" style="top:0"><span>typical 3 m+</span></div></div>
+            <div class="axis"><span>start of the loop</span><span>7.4 km along the loop</span></div>
+            <div class="strip s"><canvas id="cv-storm"></canvas><div class="typ s" id="typ-storm"><span>typical 2.5 m</span></div></div>
+            <p class="cap"><b>Top, no snow a week earlier. <span class="s">Bottom, in the storm.</span></b> One bar per spot; taller is more room. Amber bars are the 111 spots where snow cut the room; light grey, the storm spots it did not. Dark grey failed the smallest push, 0.25 m, on that day.</p>
+            <p class="after">An earlier run said 147; a height bug let the storm scans sink, and with it fixed the count is 111.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="flow">
+  <section id="b7" aria-label="Where on the loop">
+    <canvas id="loopbg" aria-hidden="true"></canvas>
+    <div class="fade"></div>
+    <svg id="loop" role="img" aria-label="7.4 km of the 7.9 km loop with 271 spots, each coloured by its room for error in the storm"></svg>
+    <div class="text">
+      <p class="lead">Where on the loop.</p>
+      <p class="body">Each dot is one of the 271 spots along 7.4 km of the 7.9 km loop, coloured by its room for error in the storm.</p>
+      <div class="key"><span><i style="background:var(--clear)"></i>3 m+</span><span><i style="background:var(--storm)"></i>under 3 m</span><span><i style="background:var(--fail)"></i>failed the smallest push, 0.25 m</span></div>
+    </div>
+  </section>
+
+  <section id="b8" aria-label="Twelve seconds at spot 002_011, both days">
+    <canvas id="clipbg" aria-hidden="true"></canvas>
+    <div id="clipfig">
+      <video id="clip" poster="media/part2_poster.webp" muted playsinline loop preload="none" data-src="media/part2.mp4" width="720" height="1280" aria-label="Twelve seconds at spot 002_011 on both days: the lidar seen from behind the car, the camera inset at the top right"></video>
+      <figure id="cam2"><canvas id="camcv" width="720" height="640" aria-label="The camera, the same twelve seconds"></canvas></figure>
+    </div>
+    <div class="fade"></div>
+    <div class="caption">
+      <div class="lg" aria-hidden="true"><span>road</span><i></i><span>3 m</span></div>
+      <p><b>A different spot, 002_011: twelve seconds, both days.</b> In the storm its room was 1.25 m; with no snow, 2.5 m. The lidar seen from behind the car, looking down the street; the camera inset at the top right, same twelve seconds. Tap to pause.</p>
+      <p class="sensor">Velodyne Alpha Prime, 128 ch.<span class="when">Boreas, Toronto. 26 Jan 2021, then 19 Jan 2021</span></p>
+    </div>
+  </section>
+
+  <section id="b9" class="page" aria-label="How I measured it">
+    <div class="inner">
+      <div class="prose">
+        <div class="block">
+          <p class="lead">How I measured it.</p>
+          <p class="body">The map is the same loop driven in clear weather on 26 Nov 2020, two months before the storm. At 271 spots on a 20 m grid along 7.4 km of the 7.9 km loop (kept where both drives had a scan, so 20 to 40 m apart), I moved the car's position guess off the truth on purpose: 0.25 m up to 3 m, in 8 directions, with a 5 degree turn added, on both days. The matcher slid and turned the scan until it fit the map (ICP, point to plane), with its height locked to the road. A push recovered if it ended within 30 cm and 2 degrees of the truth, and a size passed when 7 of 8 directions recovered.</p>
+          <p class="body">Room for error is the biggest push that passed before the first size that failed, counting up from the smallest; 3 m was the biggest tried, so 3 m+ means it never failed. Typical means the median. Snow cut the room at 111 spots, left it at 142 and widened it at 18.</p>
+        </div>
+        <div class="block">
+          <p class="lead">The limits.</p>
+          <p class="body">One drive per kind of weather. 202 no-snow spots and 120 storm spots hit the 3 m cap, so the real gap is at least what the numbers show. 12 spots fail the smallest push on both days: the method, not the snow. The last 400 m is hard on both days: the road, not the weather. Every value is good to about half a metre, the two days differ in more than snow, and a wider search window makes the numbers bigger.</p>
+        </div>
+      </div>
+      <figure class="fig" id="fig"><svg id="hist" role="img" aria-label="How many of the 271 spots had each room for error, in the storm and with no snow"></svg><p class="label">How many spots had each room for error. Amber is the storm; grey is the week earlier with no snow. 3 m+ is the cap.</p></figure>
+    </div>
+  </section>
+
+  <section id="b10" class="page" aria-label="What I learned">
+    <div class="inner">
+      <div class="block">
+        <p class="lead lesson">What I learned: the street is still there under the snow. What the storm takes is the car's margin for being wrong, and that margin was only honest once I stopped the matcher letting the scans sink.</p>
+      </div>
+      <div class="block">
+        <p class="lead">What's next.</p>
+        <p class="body">More storms, the speeds the no-snow car drove at, and the wider search window. Scripts, notes and every per-spot result are at <a href="https://github.com/Wilsawn/snowbound">github.com/Wilsawn/snowbound</a>.</p>
+      </div>
+      <div class="block">
+        <p class="lead">Built by Wilsawn Dideh.</p>
+        <p class="body">Software engineer and community builder, Ottawa. I wrote the test in Python and scipy, and this page.</p>
+        <p class="body">Into autonomy and robotics. If you're building in that space, I'd love to chat.</p>
+        <div class="links"><a href="https://www.linkedin.com/in/wilsawn-dideh">LinkedIn</a><a href="https://github.com/Wilsawn">GitHub</a><a href="mailto:didehw@gmail.com">didehw@gmail.com</a></div>
+      </div>
+      <p class="credits">Data: <a href="https://www.boreas.utias.utoronto.ca/">Boreas</a>, University of Toronto, CC BY 4.0. The study this builds on: Burnett et al., <a href="https://arxiv.org/abs/2203.10174">arXiv 2203.10174</a>. The scans and the loop are drawn on canvas with no library; the device tier comes from <a href="https://github.com/pmndrs/detect-gpu">detect-gpu</a>, MIT. Type: Familjen Grotesk and IBM Plex Mono, Open Font License, via Google Fonts. Not affiliated with the University of Toronto or any car company.</p>
+    </div>
+    <figure id="endfig" aria-label="The street a week earlier with no snow falling, from above, dimmed"><canvas id="endcv"></canvas><img src="scan_poster.webp" alt="" width="1440" height="1440" loading="lazy"></figure>
+  </section>
+</div>
+
+<script type="module">
+/* ---------- tokens ---------- */
+const BG = [10, 13, 18];
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MOVE = REDUCED ? 0 : 600;                                   // one timed move on forward entry, ms
+const easeInOut = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;   // the in-out curve, close to cubic-bezier(.77,0,.175,1)
+const $ = id => document.getElementById(id);
+const Q = new URLSearchParams(location.search);
+const PHONE = matchMedia('(max-width: 999px)').matches || navigator.maxTouchPoints > 1 && innerWidth < 1000;
+const LABEL = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--label')) || 16;   // the label size, for text drawn in SVG
+const POSTER = Q.get('poster') === '1';                           // renders the still for scan_poster.webp
+if (POSTER) document.body.classList.add('poster');
+
+/* ---------- in-app browsers get a way out ---------- */
+if (Q.get('inapp') === '1' || /LinkedInApp|Instagram|FBAN|FBAV|FB_IAB|Line\//i.test(navigator.userAgent)) {
+  document.body.classList.add('inapp');
+  const a = $('openout'); a.href = location.href.replace(/[?&]inapp=1/, '');
+}
+
+/* ---------- device tier. The first frame does not wait for detect-gpu: a provisional tier starts the scan loading at once. ---------- */
+const stage = $('stage'), canvas = $('scan'), ctx = canvas.getContext('2d');
+let tier = Q.has('tier') ? Number(Q.get('tier')) : (PHONE ? 2 : 3);
+let firstDrawn = false;
+function goNogl() { tier = 0; stage.classList.add('nogl'); document.body.classList.add('nogl'); }
+if (!Q.has('tier')) {
+  const probe = document.createElement('canvas');
+  if (!(probe.getContext('webgl2') || probe.getContext('webgl'))) goNogl();
+  else (async () => {
+    try {
+      const mod = await Promise.race([import('https://unpkg.com/detect-gpu@5.0.70/dist/detect-gpu.esm.js'), new Promise((_, rej) => setTimeout(() => rej(new Error('slow')), 2000))]);
+      const g = await Promise.race([mod.getGPUTier(), new Promise((_, rej) => setTimeout(() => rej(new Error('slow')), 2000))]);
+      if (Number.isFinite(g.tier) && g.tier <= 1 && !firstDrawn) goNogl();     // a weak device gets the poster; once the live scan is up it stays
+    } catch (e) { /* no network or a slow benchmark: keep the provisional tier */ }
+  })();
+}
+if (tier <= 1) goNogl();
+window.__snow = { tier };
+const POINTS = tier >= 3 ? 150000 : tier === 2 ? (PHONE ? 40000 : 80000) : 40000;
+
+/* ---------- data ---------- */
+const ROT = 46 * Math.PI / 180;   // the scan frame to heading-up, matched against media/spots/003_005_*_lidar.webp
+const scans = { storm: null, clear: null };
+function newScan(cap) { return { x: new Float32Array(cap), y: new Float32Array(cap), z: new Float32Array(cap), br: new Uint8Array(cap), sn: new Uint8Array(cap), n: 0, cap, done: false }; }
+function grow(s) {
+  const cap = s.cap * 2, g = newScan(cap);
+  g.x.set(s.x); g.y.set(s.y); g.z.set(s.z); g.br.set(s.br); g.sn.set(s.sn);
+  Object.assign(s, { x: g.x, y: g.y, z: g.z, br: g.br, sn: g.sn, cap });
+}
+function parseInto(s, buf, bytes) {
+  const dv = new DataView(buf.buffer, buf.byteOffset, bytes), c = Math.cos(ROT), si = Math.sin(ROT);
+  for (let o = 0; o < bytes; o += 8) {
+    if (s.n >= s.cap) grow(s);
+    const i = s.n, px = dv.getInt16(o, true) / 100, py = dv.getInt16(o + 2, true) / 100;
+    s.x[i] = px * c + py * si; s.y[i] = px * si - py * c;                        // x forward (up on screen), y to the right
+    s.z[i] = dv.getInt16(o + 4, true) / 100;
+    s.br[i] = dv.getUint8(o + 6); s.sn[i] = dv.getUint8(o + 7); s.n++;
+  }
+}
+/* the scan streams in: the file is a random sample, so the first bytes are a thin, even layer and the rest refines it */
+async function streamScan(name, onChunk) {
+  const r = await fetch('data/scan_' + name + '.bin');
+  const len = Number(r.headers.get('content-length')) || 0;
+  const s = newScan(len ? Math.ceil(len / 8) : 200000);
+  scans[name] = s;
+  if (!r.body) { const buf = new Uint8Array(await r.arrayBuffer()); parseInto(s, buf, buf.length - buf.length % 8); s.done = true; onChunk(s); return s; }
+  const rd = r.body.getReader(); let rest = new Uint8Array(0);
+  for (;;) {
+    const { value, done } = await rd.read(); if (done) break;
+    let buf = value;
+    if (rest.length) { const m = new Uint8Array(rest.length + value.length); m.set(rest); m.set(value, rest.length); buf = m; }
+    const full = buf.length - buf.length % 8;
+    parseInto(s, buf, full); rest = buf.slice(full);
+    onChunk(s);
+  }
+  s.done = true; onChunk(s); return s;
+}
+async function loadCar() {
+  const buf = await (await fetch('data/car.bin')).arrayBuffer();
+  const n = 4736, pos = new Float32Array(buf, 0, n * 9), nrm = new Float32Array(buf, n * 36, n * 9);
+  const order = [...Array(n).keys()].sort((a, b) => (pos[a * 9 + 2] + pos[a * 9 + 5] + pos[a * 9 + 8]) - (pos[b * 9 + 2] + pos[b * 9 + 5] + pos[b * 9 + 8]));   // roof last
+  return { n, pos, nrm, order };
+}
+const stamp = us => { const d = new Date(us / 1000); const p = v => String(v).padStart(2, '0'); return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())} UTC`; };
+
+/* ---------- view ---------- */
+const V = { w: 0, h: 0, dpr: 1, wide: false, cx: 0, cy: 0, cyClose: 0, ppmWide: 12, ppmClose: 28, step: 1, scanx: 540 };
+function measure() {
+  V.w = innerWidth; V.h = stage.clientHeight; V.wide = V.w >= 1000;
+  V.dpr = POSTER ? 1 : Math.min(V.wide ? 2 : 1.5, devicePixelRatio || 1);
+  V.ppmWide = V.wide ? Math.max(12, Math.min(16, V.w / 96)) : V.w / 24;          // phone: 24 m across
+  V.ppmClose = V.wide ? V.ppmWide * 2 : V.w / 20;                                 // the push: twice as close on desktop, 20 m across on a phone
+  V.cx = V.wide ? (V.scanx + V.w) / 2 : V.w / 2;
+  V.cy = V.wide ? V.h / 2 + 30 : V.h * 0.45;
+  V.cyClose = V.wide ? V.h / 2 + 10 : V.h * 0.31;
+  if (POSTER) { V.ppmWide = 16; V.cx = V.w / 2; V.cy = V.h / 2; }
+  V.step = POSTER ? 1 : Math.max(1, Math.floor(200000 / POINTS));
+  if (!V.wide && V.step > 2) V.step = 2;                                          // a phone shows a 24 m strip, so every second point in it is drawn
+  canvas.width = Math.round(V.w * V.dpr); canvas.height = Math.round(V.h * V.dpr);
+}
+function toPx(x, y, ppm, cy = V.cy) { return [V.cx + y * ppm, cy - x * ppm]; }
+
+/* ---------- layers: one pre-rendered picture per scan, scale and kind (solid or snow). Drawn in slices so no task runs long. ---------- */
+const SPEC = { sw: ['storm', false, false, 0], nw: ['storm', false, true, 1], cw: ['clear', false, false, 2], cnw: ['clear', false, true, 3], sc: ['storm', true, false, 4], nc: ['storm', true, true, 5] };
+function newLayer(key) {
+  const [src, close, snow, idx] = SPEC[key];
+  const c = document.createElement('canvas'); c.width = canvas.width; c.height = canvas.height;
+  const cc = c.getContext('2d'), img = cc.createImageData(c.width, c.height);
+  return { key, src, close, snow, idx, ppm: close ? V.ppmClose : V.ppmWide, cy: close ? V.cyClose : V.cy, c, cc, img, d: img.data, fed: 0, dirty: false };
+}
+function feed(L, s, to) {
+  const d = L.d, W = L.c.width, H = L.c.height, k = V.dpr, step = L.close ? 1 : V.step, snow = L.snow, ppm = L.ppm, cy = L.cy;
+  const pxS = L.close ? (k > 1.4 ? 3 : 2) : ((!V.wide || k > 1.4) && !POSTER ? 2 : 1), pxN = k > 1.4 || !V.wide ? 2 : 1;   // phone: 2 px snow points, so the pale haze reads as it does at 1440
+  const boostN = 1, boostS = L.close ? (V.wide ? 1.4 : 1) : 1.2;   // wide: the same alpha on every size (the phone's 1.8 of fix pass 1 lit the storm's unflagged specks like snow)
+  const nearRoad = L.src === 'storm' && !L.close && !snow;                // the storm's unflagged return on the road around the car (within 10 m to the side, 26 m ahead and behind) is drawn at the road end of the legend, so the kerbs, walls and trees carry the no-snow frame
+  const put = (ix, iy, r, g, b, a, px) => {
+    for (let dy = 0; dy < px; dy++) for (let dx = 0; dx < px; dx++) {
+      const X = ix + dx, Y = iy + dy; if (X < 0 || Y < 0 || X >= W || Y >= H) continue;
+      const i = (Y * W + X) * 4;
+      d[i] = Math.min(205, d[i] + r * a); d[i + 1] = Math.min(212, d[i + 1] + g * a); d[i + 2] = Math.min(222, d[i + 2] + b * a);
+      d[i + 3] = Math.min(255, d[i + 3] + 255 * a);
+    }
+  };
+  let i = L.fed; if (step > 1) i += (step - i % step) % step;
+  for (; i < to; i += step) {
+    if (!!s.sn[i] !== snow) continue;
+    const X = V.cx + s.y[i] * ppm, Y = cy - s.x[i] * ppm;
+    if (X < -2 || Y < -2 || X > V.w + 2 || Y > V.h + 2) continue;
+    const ix = Math.round(X * k), iy = Math.round(Y * k);
+    if (snow) { put(ix, iy, 185, 202, 219, Math.min(1, 0.55 * boostN), pxN); continue; }
+    const t = nearRoad && (s.x[i] / 26) ** 2 + (s.y[i] / 10) ** 2 < 1 ? 0 : Math.max(0, Math.min(1, (s.z[i] + 0.3) / 3.3));   // road dim, 3 m up full
+    const b = s.br[i] / 255;
+    put(ix, iy, 70 + t * 130, 80 + t * 130, 96 + t * 126, Math.min(1, (0.13 + t * 0.27 + b * 0.08) * boostS), pxS);
+  }
+  L.fed = to; L.dirty = true;
+}
+const jobs = []; let pumpQueued = false;
+function schedule() { if (!pumpQueued) { pumpQueued = true; requestAnimationFrame(pump); } }
+function pump() {
+  pumpQueued = false;
+  const t0 = performance.now(); let any = false, visible = false, more = false;
+  for (const j of jobs) {
+    const s = scans[j.L.src]; if (!s) continue;
+    while (j.L.fed < s.n && performance.now() - t0 < 10) { feed(j.L, s, Math.min(s.n, j.L.fed + 15000)); any = true; }
+    if (j.L.fed < s.n) more = true;
+  }
+  for (const j of jobs) if (j.L.dirty) { j.L.cc.putImageData(j.L.img, 0, 0); j.L.dirty = false; if (state.cur[j.L.idx] > 0.004) visible = true; }
+  for (let i = jobs.length - 1; i >= 0; i--) { const s = scans[jobs[i].L.src]; if (s && s.done && jobs[i].L.fed >= s.n) { const j = jobs.splice(i, 1)[0]; if (j.onDone) j.onDone(); } }
+  if (any && visible && !state.anim) { drawFrame(); firstDrawn = true; }
+  if (more) schedule();
+}
+function queue(key, onDone) {
+  if (state.layers[key]) { if (onDone) onDone(); return state.layers[key]; }
+  const L = state.layers[key] = newLayer(key);
+  jobs.push({ L, onDone }); schedule(); return L;
+}
+function ensure(key) {                                     // a layer needed now: keep the pump on it (about 10 ms a frame); a part-fed layer is drawn thinner and fills in over the next frames, never in one long frame
+  const L = queue(key), s = scans[L.src]; if (!s) return L;
+  if (L.fed < s.n) schedule();
+  return L;
+}
+/* heavy canvas work off the pinned stage (the try-it panels, the ending's figure) runs as generators, at most about 8 ms a frame */
+const sliced = new Map(); let slicedQueued = false;
+function runSliced(key, gen) { sliced.set(key, gen); if (!slicedQueued) { slicedQueued = true; requestAnimationFrame(pumpSliced); } }
+function pumpSliced() {
+  slicedQueued = false; const t0 = performance.now();
+  for (const [key, g] of sliced) {
+    let r = g.next(); while (!r.done && performance.now() - t0 < 8) r = g.next();
+    if (r.done) sliced.delete(key);
+    if (performance.now() - t0 >= 8) break;
+  }
+  if (sliced.size) { slicedQueued = true; requestAnimationFrame(pumpSliced); }
+}
+
+/* ---------- states: each a complete picture ---------- */
+/* [storm solid wide, storm snow wide, clear solid wide, clear snow wide, storm solid close, storm snow close, zoom, band, grid, car] */
+const STATES = {
+  hero:   [1.00, 0.60, 0, 0, 0, 0, 0, 0, 1, 1],
+  snow:   [1.00, 1.00, 0, 0, 0, 0, 0, 0, .5, 1],                  // the structure at full, as in b2b: b2b is this picture minus the snow layer
+  nosnow: [1.00, 0.00, 0, 0, 0, 0, 0, 0, 1, 1],
+  clear:  [0, 0, 1.00, 0.55, 0, 0, 0, 0, 1, 1],
+  push:   [0, 0, 0, 0, 1.00, 0.22, 1, 1, 1, 1],
+  try:    [0.12, 0.06, 0, 0, 0, 0, 0, 0, .25, 0],
+  result: [0.26, 0.08, 0, 0, 0, 0, 0, 0, .2, 0],
+};
+const NEED = { hero: ['sw', 'nw'], snow: ['sw', 'nw'], nosnow: ['sw'], clear: ['cw', 'cnw'], push: ['sc', 'nc'], try: ['sw', 'nw'], result: ['sw', 'nw'] };
+const state = { cur: STATES.hero.slice(), from: null, to: null, t0: 0, name: 'hero', layers: {}, anim: 0, visible: true };
+let route = null, car = null, hero = null;
+
+function drawCar(ppm, alpha, outline = 0) {
+  if (alpha <= 0.004) return;
+  if (outline > 0.004) {                                                       // the push: the car as a thin outline at true size, nothing filled
+    ctx.globalAlpha = alpha * outline; ctx.strokeStyle = 'rgba(238,241,245,.95)'; ctx.lineWidth = 1.25;
+    ctx.beginPath(); ctx.roundRect(-1.0 * ppm, -2.4 * ppm, 2.0 * ppm, 4.8 * ppm, 0.3 * ppm); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-0.9 * ppm, -0.9 * ppm); ctx.lineTo(0.9 * ppm, -0.9 * ppm); ctx.stroke();   // the windscreen line marks the front
+    ctx.globalAlpha = 1;
+  }
+  alpha *= 1 - outline;
+  if (alpha <= 0.004) return;
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = 'rgba(0,0,0,.3)';                                            // a flat ground band under the car, no ring, no glow
+  ctx.beginPath(); ctx.ellipse(0, 0, 1.2 * ppm, 2.7 * ppm, 0, 0, Math.PI * 2); ctx.fill();
+  paintCarMesh(ctx, ppm);
+  ctx.globalAlpha = 1;
+}
+function paintCarMesh(g, ppm) {                                                // the car, solid and softly shaded, at the origin of g's transform (the stage and the ending's figure); its footprint until the mesh lands
+  if (!car) { g.fillStyle = 'rgb(118,126,140)'; g.beginPath(); g.roundRect(-1.0 * ppm, -2.4 * ppm, 2.0 * ppm, 4.8 * ppm, 0.3 * ppm); g.fill(); return; }
+  const { pos, nrm, order } = car;
+  for (const t of order) {
+    const o = t * 9, nz = Math.max(0, nrm[o + 2]), ny = nrm[o + 1];
+    const l = 0.42 + nz * 0.36 + ny * 0.06;                                    // soft shading: a solid car, not a textured slab
+    g.fillStyle = `rgb(${Math.round(40 + l * 150)},${Math.round(46 + l * 150)},${Math.round(56 + l * 150)})`;
+    g.beginPath();
+    g.moveTo(pos[o + 1] * ppm, -pos[o] * ppm); g.lineTo(pos[o + 4] * ppm, -pos[o + 3] * ppm); g.lineTo(pos[o + 7] * ppm, -pos[o + 6] * ppm);
+    g.closePath(); g.fill();
+  }
+}
+
+function drawFrame() {
+  if (tier <= 1) return;
+  const [sw, nw, cw, cnw, sc, nc, zoom, band, grid, carA] = state.cur, L = state.layers;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.fillStyle = `rgb(${BG.join(',')})`; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const ppm = V.ppmWide + (V.ppmClose - V.ppmWide) * zoom, cy = V.cy + (V.cyClose - V.cy) * zoom;
+  if (grid > 0.004) {                                                          // the 10 m grid under everything
+    ctx.setTransform(V.dpr, 0, 0, V.dpr, 0, 0);
+    ctx.strokeStyle = `rgba(255,255,255,${(0.07 * grid).toFixed(3)})`; ctx.lineWidth = 1;
+    const g = 10 * ppm;
+    for (let x = V.cx % g; x < V.w; x += g) { ctx.beginPath(); ctx.moveTo(Math.round(x) + .5, 0); ctx.lineTo(Math.round(x) + .5, V.h); ctx.stroke(); }
+    for (let y = cy % g; y < V.h; y += g) { ctx.beginPath(); ctx.moveTo(0, Math.round(y) + .5); ctx.lineTo(V.w, Math.round(y) + .5); ctx.stroke(); }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+  }
+  const draw = (c, a) => { if (!c || a <= 0.004) return; ctx.globalAlpha = a; ctx.drawImage(c.c, 0, 0); };
+  draw(L.sw, sw); draw(L.nw, nw); draw(L.cw, cw); draw(L.cnw, cnw); draw(L.sc, sc); draw(L.nc, nc);
+  ctx.globalAlpha = 1;
+  ctx.setTransform(V.dpr, 0, 0, V.dpr, 0, 0);
+  ctx.translate(V.cx, cy);
+  if (band > 0.004) {                                                          // the push: two thin outlines flat on the road, at true scale
+    ctx.globalAlpha = band;
+    ctx.strokeStyle = 'rgba(217,163,90,.95)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, 0, 1.5 * ppm, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = 'rgba(233,238,244,.6)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(0, 0, 3 * ppm, 0, Math.PI * 2); ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+  drawCar(ppm, carA, band);
+}
+
+function setState(name, forward) {
+  state.name = name;
+  if (tier > 1) for (const k of NEED[name]) ensure(k);
+  state.from = state.cur.slice(); state.to = STATES[name]; state.t0 = performance.now();
+  cancelAnimationFrame(state.anim); state.anim = 0;
+  const dur = forward ? MOVE : 0;                                     // backward: the end state at once
+  const step = now => {
+    const t = dur ? Math.min(1, (now - state.t0) / dur) : 1, e = easeInOut(t);
+    for (let k = 0; k < 10; k++) state.cur[k] = state.from[k] + (state.to[k] - state.from[k]) * e;
+    drawFrame();
+    state.anim = t < 1 ? requestAnimationFrame(step) : 0;
+  };
+  state.anim = requestAnimationFrame(step);
+  $('pin-lidar').classList.toggle('on', name === 'hero');
+  $('pin-cam').classList.toggle('on', name === 'hero');
+  ['pin-snow', 'pin-road'].forEach(id => $(id).classList.toggle('on', name === 'snow'));
+  $('pin-car').classList.toggle('on', name === 'hero' || name === 'snow');
+  ['pin-r1', 'pin-r2'].forEach(id => $(id).classList.toggle('on', name === 'push'));
+  stage.classList.toggle('dim', name === 'try');
+  stage.classList.toggle('result', name === 'result');
+  stage.classList.toggle('push', name === 'push');
+  $('where').textContent = name === 'clear' ? 'North Toronto, 19 Jan 2021, no snow falling' : 'North Toronto, 26 Jan 2021, snowstorm';
+}
+
+/* ---------- pins ---------- */
+function placeStatic() {
+  const put = (id, x, y, right) => { const el = $(id); el.style.left = x + 'px'; el.style.top = y + 'px'; if (right !== undefined) el.classList.toggle('r', right); };
+  // tier 0 shows the poster, whose car sits at (fxF, fyF) at sF px per metre (the same as the stage on a phone); the two static pins follow it there
+  const fb = tier <= 1, sF = V.wide ? Math.max(V.w, V.h) / 1440 * 16 : V.w / 24, fxF = V.wide ? V.w / 2 + V.w * 0.2 : V.w / 2, fyF = V.wide ? V.h / 2 : V.h * 0.45;
+  const cx0 = fb ? fxF : V.cx, cy0 = fb ? fyF : V.cy, ppm0 = fb ? sF : V.ppmWide;
+  put('pin-car', cx0 - 1.0 * ppm0 - 14, cy0);
+  put('pin-lidar', cx0 + 1.0 * ppm0 + 14, cy0 - 4 * ppm0, false);
+  const c = V.ppmClose, q = Math.SQRT1_2;
+  $('pin-r2').classList.toggle('up', !V.wide);
+  if (V.wide) {
+    put('pin-r1', V.cx + 1.5 * c * q + 12, V.cyClose + 1.5 * c * q + 2, false);
+    put('pin-r2', V.cx - 3 * c * q - 12, V.cyClose - 3 * c * q - 4, true);
+  } else {
+    put('pin-r1', V.cx + 1.5 * c * 0.94 + 12, V.cyClose + 1.5 * c * 0.34 + 2, false);
+    put('pin-r2', V.cx, V.cyClose - 3 * c - 11, false);
+  }
+  const cam = $('cam'), tie = $('tie');                                // the tie from the dashcam frame to the car
+  const r = cam.getBoundingClientRect(), lr = cam.parentElement.getBoundingClientRect();
+  const top = r.bottom - lr.top, bottom = V.cy - 2.4 * V.ppmWide - 4;
+  if (V.wide) cam.style.left = (V.cx - r.width / 2) + 'px';
+  tie.style.left = V.cx + 'px';                                        // the tie runs down the car's centre line on every size and ends on the car's top edge
+  // the camera's label, on dark ground like the other pins. Desktop: beside the photo at its bottom left corner, its dot on the photo's edge; when that would sit within 16 px of the text column (1440), under the photo's left corner instead, its dot on the photo's bottom edge. Phone: hung from the tie's start under the photo, its dot where the tie starts; the tie continues below the label so no line crosses the words.
+  const pc = $('pin-cam'), camLeft = V.cx - r.width / 2, pw = pc.offsetWidth, ph = pc.offsetHeight;
+  const colRight = (document.querySelector('#b1 .text').getBoundingClientRect().right - lr.left);
+  const under = !V.wide || camLeft - 14 - pw < colRight + 16;
+  pc.classList.toggle('r', !under); pc.classList.toggle('dn', under);
+  let tieTop = top;
+  if (!under) put('pin-cam', camLeft - 14, top - 12);
+  else if (V.wide) put('pin-cam', camLeft + pw / 2, top + 14);
+  else { put('pin-cam', V.cx, top + 14); tieTop = top + 14 + ph + 6; }
+  tie.style.top = tieTop + 'px'; tie.style.height = Math.max(0, bottom - tieTop) + 'px';
+  if (!V.wide && !fb) {                                                // phone: the lidar label beside the tie, 14 px off it, halfway down; to its left if it would not fit
+    const pl = $('pin-lidar'), lw = pl.offsetWidth, ly = (tieTop + bottom) / 2;
+    if (V.cx + 14 + 11 + lw <= V.w - 20) put('pin-lidar', V.cx + 14 + 11, ly, false); else put('pin-lidar', V.cx - 14 - 11, ly, true);
+  }
+  // the tier-0 fallback: the push outlines over the poster (a 1440 px square at 16 px per metre; cover on desktop, the phone shows 24 m across with the car at 45 percent)
+  const s = V.wide ? Math.max(V.w, V.h) / 1440 * 16 : V.w / 24, fx = V.wide ? V.w / 2 + V.w * 0.2 : V.w / 2, fy = V.wide ? V.h / 2 : V.h * 0.45;
+  $('pushfb').setAttribute('viewBox', `0 0 ${V.w} ${V.h}`);
+  const F = 'Familjen Grotesk, Familjen Fallback, sans-serif', lh = Math.round(LABEL * 1.3), cw = LABEL * 0.46;
+  const pin = (x, y, anchor, l1, l2, c1) => {                           // two lines with the page-colour backing of the main pins; (x, y) is the text's edge at the block's middle
+    const w = Math.max(l1.length, l2.length) * cw + 14, x0 = anchor === 'end' ? x - w : anchor === 'middle' ? x - w / 2 : x;
+    return `<rect x="${x0.toFixed(1)}" y="${(y - lh - 3).toFixed(1)}" width="${w.toFixed(1)}" height="${lh * 2 + 6}" rx="4" fill="rgba(10,13,18,.84)"/>` +
+      `<text x="${x.toFixed(1)}" y="${(y - 5).toFixed(1)}" fill="${c1}" font-size="${LABEL}" text-anchor="${anchor}" font-family="${F}">${l1}</text>` +
+      `<text x="${x.toFixed(1)}" y="${(y + lh - 5).toFixed(1)}" fill="#bcc4ce" font-size="${LABEL}" text-anchor="${anchor}" font-family="${F}">${l2}</text>`;
+  };
+  const dy = V.wide ? 1 : -1;                                                                         // phone: the label sits above right, clear of the words under the ring
+  const d1 = [fx + 1.5 * s * q, fy + 1.5 * s * q * dy], t1 = [fx + 3 * s * q + 16, fy + (3 * s * q + 8) * dy];   // the 1.5 m dot on its ring, the words outside the 3 m ring, a leader between
+  $('pushfb').innerHTML = `<circle cx="${fx}" cy="${fy}" r="${1.5 * s}" fill="rgba(217,163,90,.10)" stroke="rgba(217,163,90,.95)" stroke-width="1.5"/><circle cx="${fx}" cy="${fy}" r="${3 * s}" fill="none" stroke="rgba(233,238,244,.6)" stroke-width="1"/>` +
+    `<line x1="${d1[0].toFixed(1)}" y1="${d1[1].toFixed(1)}" x2="${(t1[0] - 6).toFixed(1)}" y2="${t1[1].toFixed(1)}" stroke="rgba(255,255,255,.45)" stroke-width="1"/><circle cx="${d1[0].toFixed(1)}" cy="${d1[1].toFixed(1)}" r="3" fill="#d9a35a"/>` +
+    pin(t1[0], t1[1], 'start', '1.5 m', 'in the storm', '#d9a35a') +
+    (V.wide ? `<circle cx="${(fx - 3 * s * q).toFixed(1)}" cy="${(fy - 3 * s * q).toFixed(1)}" r="3" fill="#eef1f5"/>` + pin(fx - 3 * s * q - 14, fy - 3 * s * q, 'end', '3 m+', 'a week earlier, no snow', '#eef1f5')
+            : `<circle cx="${fx}" cy="${(fy - 3 * s).toFixed(1)}" r="3" fill="#eef1f5"/>` + pin(fx, fy - 3 * s - 14 - lh, 'middle', '3 m+', 'a week earlier, no snow', '#eef1f5'));
+}
+function placeData(s) {
+  const nearest = (tx, ty, test) => {
+    let best = -1, bd = 1e9;
+    for (let i = 0; i < s.n; i += 3) { if (!test(i)) continue; const d = (s.x[i] - tx) ** 2 + (s.y[i] - ty) ** 2; if (d < bd) { bd = d; best = i; } }
+    return best;
+  };
+  const fwd = V.wide ? 9 : 8, left = V.wide ? 9 : 5;
+  const si = nearest(fwd, left, i => s.sn[i] && s.z[i] > 0.5);
+  const ri = nearest(-5, -3.5, i => !s.sn[i] && s.z[i] < 0.15 && s.z[i] > -0.2);
+  const put = (id, x, y, right) => { const el = $(id); el.style.left = x + 'px'; el.style.top = y + 'px'; if (right !== undefined) el.classList.toggle('r', right); };
+  const beside = (id, x, y) => { const w = $(id).offsetWidth; const flip = x + 14 + w > V.w - 20; put(id, flip ? x - 14 : x + 14, y, flip); };
+  let p = si >= 0 ? toPx(s.x[si], s.y[si], V.ppmWide) : [V.cx + 40, V.cy - 80]; beside('pin-snow', p[0], p[1]);
+  p = ri >= 0 ? toPx(s.x[ri], s.y[ri], V.ppmWide) : [V.cx - 50, V.cy + 60]; beside('pin-road', p[0], p[1]);
+  if (V.wide) {                                                          // desktop: the lidar label sits on a wall or kerb, not on the car. Phone: it stays beside the tie (placeStatic)
+    const li = nearest(-7, -9, i => !s.sn[i] && s.z[i] > 0.8);
+    p = li >= 0 ? toPx(s.x[li], s.y[li], V.ppmWide) : [V.cx - 60, V.cy + 70]; beside('pin-lidar', p[0], p[1]);
+  }
+}
+
+/* ---------- beat 4: the ten marks ---------- */
+function buildMarks() {
+  $('marks').innerHTML = route.sizes_m.map((m, i) => `<div class="${hero.storm_ok[i] >= 7 ? '' : 'lost'}${m === 1.5 ? ' at' : ''}"><i></i><b>${m}</b></div>`).join('');
+}
+
+/* ---------- beat 5: try it. Spot A is the hero spot of beat 4 (index 41, 003_005). ---------- */
+const TRY = [41, 90, 117];
+let tryIdx = 0, pushIdx = 5, tryArmed = false;
+const tryCv = { storm: $('cv-try-storm'), clear: $('cv-try-clear') }, tryImg = { storm: null, clear: null }, tryPix = {};
+const tryPpm = (W, H) => Math.min(W, H) / (V.wide ? 20 : 7);                 // pixels per metre: 20 m across the short side on desktop, 7 m on the phone (the 3 m ring always fits)
+function srcPixels(im) {                                                     // the per-spot image (400 px for 32 m) read once as pixels
+  if (tryPix[im.src]) return tryPix[im.src];
+  const c = document.createElement('canvas'); c.width = 400; c.height = 400;
+  const g = c.getContext('2d'); g.drawImage(im, 0, 0, 400, 400);
+  return tryPix[im.src] = g.getImageData(0, 0, 400, 400).data;
+}
+function pointPainter(g, W, H, px) {                                       // additive dots into an ImageData, as the stage layers do
+  const img = g.createImageData(W, H), d = img.data;
+  const put = (ix, iy, r, gg, b, a) => {
+    for (let dy = 0; dy < px; dy++) for (let dx = 0; dx < px; dx++) {
+      const X = ix + dx, Y = iy + dy; if (X < 0 || Y < 0 || X >= W || Y >= H) continue;
+      const i = (Y * W + X) * 4;
+      d[i] = Math.min(215, d[i] + r * a); d[i + 1] = Math.min(220, d[i + 1] + gg * a); d[i + 2] = Math.min(228, d[i + 2] + b * a); d[i + 3] = 255;
+    }
+  };
+  const scan = (s, ppm, cx, cy, boost = 1, from = 0, to = s.n) => {         // thin points coloured by height, snow pale; a range so a job can run in slices
+    for (let i = from; i < to; i++) {
+      const X = cx + s.y[i] * ppm, Y = cy - s.x[i] * ppm;
+      if (X < -2 || Y < -2 || X > W + 2 || Y > H + 2) continue;
+      const ix = Math.round(X), iy = Math.round(Y);
+      if (s.sn[i]) { put(ix, iy, 185, 202, 219, Math.min(1, 0.5 * boost)); continue; }
+      const t = Math.max(0, Math.min(1, (s.z[i] + 0.3) / 3.3)), b = s.br[i] / 255;
+      put(ix, iy, 70 + t * 130, 80 + t * 130, 96 + t * 126, Math.min(1, (0.26 + t * 0.44 + b * 0.1) * boost));
+    }
+  };
+  return { put, scan, done: () => g.putImageData(img, 0, 0) };
+}
+function drawTryPanel(kind) {
+  const cv = tryCv[kind], r = cv.parentElement.getBoundingClientRect(); if (!r.width || !r.height) return;
+  const k = Math.min(2, devicePixelRatio || 1), W = Math.round(r.width * k), H = Math.round(r.height * k);
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  const g = cv.getContext('2d'), ppm = tryPpm(W, H), cx = W / 2, cy = H / 2, px = k > 1.4 ? 2 : 1;
+  const size = () => { if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; } };   // sized just before the picture lands, so the old one stays up until then
+  const s = scans[kind];
+  if (tryIdx === 0 && s && s.n) {                                            // spot A is the hero spot: drawn from the thin-point data, coloured by height as on the stage
+    const P = pointPainter(g, W, H, px), n = s.n;
+    runSliced('try-' + kind, (function* () { for (let i = 0; i < n; i += 20000) { P.scan(s, ppm, cx, cy, 1, i, Math.min(n, i + 20000)); yield; } size(); P.done(); })());
+    return;
+  }
+  const im = tryImg[kind]; if (!im || !im.complete || !im.naturalWidth) { sliced.delete('try-' + kind); size(); g.fillStyle = '#000'; g.fillRect(0, 0, W, H); return; }
+  runSliced('try-' + kind, (function* () {
+    const src = srcPixels(im), sc = ppm / (400 / 32);                         // every lit source pixel becomes one dot at device resolution, not a blurred upscale
+    const Q = pointPainter(g, W, H, px), jit = Math.max(0, sc - 1) * 0.5;    // each dot lands somewhere inside its 8 cm source pixel, so no lattice shows
+    for (let sy = 0; sy < 400; sy++) {
+      for (let sx = 0; sx < 400; sx++) {
+        const l = src[(sy * 400 + sx) * 4]; if (l < 12) continue;
+        const h = (sx * 73856093 ^ sy * 19349663) >>> 0, jx = ((h & 255) / 255 - 0.5) * jit, jy = (((h >> 8) & 255) / 255 - 0.5) * jit;
+        const X = cx + (sx - 199.5) * sc + jx, Y = cy + (sy - 199.5) * sc + jy;
+        if (X < -2 || Y < -2 || X > W + 2 || Y > H + 2) continue;
+        Q.put(Math.round(X), Math.round(Y), 190, 198, 210, Math.min(1, l / 255 * 2.0));
+      }
+      if (sy % 40 === 39) yield;
+    }
+    size(); Q.done();
+  })());
+}
+function drawTry() { drawTryPanel('storm'); drawTryPanel('clear'); }
+function buildTry() {
+  for (const kind of ['storm', 'clear']) { const im = new Image(); im.onload = () => drawTryPanel(kind); tryImg[kind] = im; }
+  $('spots').innerHTML = TRY.map((n, i) => `<button type="button" aria-pressed="${i === 0}" data-i="${i}" aria-label="Spot ${['A', 'B', 'C'][i]}">${['A', 'B', 'C'][i]}</button>`).join('');
+  $('sizes').innerHTML = route.sizes_m.map((m, i) => `<button type="button" aria-pressed="${i === pushIdx}" data-i="${i}" aria-label="${m} m">${m}</button>`).join('');
+  $('spots').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; tryIdx = +b.dataset.i; [...$('spots').children].forEach(x => x.setAttribute('aria-pressed', x === b)); updateTry(); });
+  $('sizes').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; pushIdx = +b.dataset.i; [...$('sizes').children].forEach(x => x.setAttribute('aria-pressed', x === b)); updateTry(); });
+  updateTry();
+}
+function ring(svg, m, cls) {                                            // the push ring at true scale, with eight thin neutral ticks, one per direction (route.json records how many came back, not which, so none is filled; the count line carries the result)
+  const r = svg.getBoundingClientRect(), W = r.width || 300, H = r.height || 200, rad = m * tryPpm(W, H);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  let s = `<circle cx="${W / 2}" cy="${H / 2}" r="${rad.toFixed(1)}" fill="none" stroke="${cls}" stroke-width="1" stroke-opacity=".9"/>`;
+  for (let i = 0; i < 8; i++) {
+    const a = i * Math.PI / 4, c = Math.cos(a), sn = Math.sin(a);
+    s += `<line x1="${(W / 2 + c * (rad - 4)).toFixed(1)}" y1="${(H / 2 + sn * (rad - 4)).toFixed(1)}" x2="${(W / 2 + c * (rad + 4)).toFixed(1)}" y2="${(H / 2 + sn * (rad + 4)).toFixed(1)}" stroke="#8a929e" stroke-width="1"/>`;
+  }
+  svg.innerHTML = s;
+}
+function updateTry() {
+  const s = route.spots[TRY[tryIdx]], m = route.sizes_m[pushIdx];
+  if (tryArmed) {
+    for (const kind of ['storm', 'clear']) { const src = new URL(s[kind + '_lidar'], location.href).href; if (tryImg[kind].src !== src) tryImg[kind].src = src; }
+    drawTry();
+  }
+  ring($('ov-storm'), m, s.storm_ok[pushIdx] >= 7 ? '#d9a35a' : '#8a929e');
+  ring($('ov-clear'), m, s.clear_ok[pushIdx] >= 7 ? '#e9eef4' : '#8a929e');
+  $('cap-storm').innerHTML = `In the storm, <b>${s.storm_ok[pushIdx]} of 8 came back</b> from ${m} m`;
+  $('cap-clear').innerHTML = `No snow a week earlier, <b>${s.clear_ok[pushIdx]} of 8 came back</b>`;
+}
+
+/* ---------- beat 6: the loop drawn twice as bars ---------- */
+function drawBars() {
+  const spots = route.spots, dpr = Math.min(2, devicePixelRatio || 1);
+  const draw = (id, key, color, cutColor) => {
+    const cv = $(id), rect = cv.parentElement.getBoundingClientRect();
+    if (!rect.width) return;
+    const W = Math.round(rect.width * dpr), H = Math.round(rect.height * dpr);
+    cv.width = W; cv.height = H;
+    const g = cv.getContext('2d'); g.clearRect(0, 0, W, H);
+    const n = spots.length, w = W / n, gap = Math.min(w * 0.3, 1.5 * dpr);
+    for (let i = 0; i < n; i++) {
+      const v = spots[i][key], cut = key === 'storm_m' && spots[i].storm_m < spots[i].clear_m;
+      const h = v === 0 ? Math.max(2 * dpr, H * 0.04) : (v / 3) * H;
+      g.fillStyle = cut ? cutColor : (v === 0 ? '#4a515b' : color);          // every cut spot is amber, even a 0 m stub; grey is 0 m and not cut
+      g.globalAlpha = v === 0 ? 1 : 0.5 + 0.5 * (v / 3);
+      if (key === 'storm_m') g.fillRect(i * w + gap / 2, 0, Math.max(w - gap, 0.8 * dpr), h);
+      else g.fillRect(i * w + gap / 2, H - h, Math.max(w - gap, 0.8 * dpr), h);
+    }
+  };
+  draw('cv-clear', 'clear_m', '#e9eef4', '#e9eef4');
+  draw('cv-storm', 'storm_m', '#aeb6c1', '#d9a35a');
+  $('typ-storm').style.top = (route.storm_median_m / 3 * 100) + '%';
+  const sp = $('typ-storm').firstElementChild, sh = $('cv-storm').parentElement.getBoundingClientRect().height;
+  sp.style.top = innerWidth < 1000 ? (sh * (1 - route.storm_median_m / 3) + 4).toFixed(1) + 'px' : '';   // phone: just under the strip; desktop: the stylesheet's place beside the line
+}
+
+/* ---------- beat 7: the loop. North up on the phone; on desktop turned a quarter so it fills the right two thirds. ---------- */
+function drawLoop() {
+  const svg = $('loop'), r = svg.getBoundingClientRect();
+  const W = r.width || innerWidth, H = r.height || innerHeight;
+  const lat0 = 43.79, kx = 111320 * Math.cos(lat0 * Math.PI / 180), ky = 110574;
+  const wide = innerWidth >= 1000;
+  const M = wide ? p => [p[1], p[0]] : p => [p[0], -p[1]];              // desktop: north to the right, east down. Phone: north up.
+  const pts = route.route.map(p => M([(p[1] + 79.47) * kx, (p[0] - 43.79) * ky]));
+  const sp = route.spots.map(s => M([(s.lon + 79.47) * kx, (s.lat - 43.79) * ky]));
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  const minx = Math.min(...xs), maxx = Math.max(...xs), miny = Math.min(...ys), maxy = Math.max(...ys);
+  const padL = wide ? V.scanx : 20, padR = wide ? 48 : 20, padT = 84, padB = wide ? 48 : H * 0.36;
+  const k = Math.min((W - padL - padR) / (maxx - minx), (H - padT - padB) / (maxy - miny));
+  const ox = padL + ((W - padL - padR) - (maxx - minx) * k) / 2, oy = padT + ((H - padT - padB) - (maxy - miny) * k) / 2;
+  const P = p => [ox + (p[0] - minx) * k, oy + (p[1] - miny) * k];
+  const d = pts.map((p, i) => (i ? 'L' : 'M') + P(p).map(v => v.toFixed(1)).join(' ')).join('');
+  const col = v => v === 0 ? '#4a515b' : v >= 3 ? '#e9eef4' : '#d9a35a';   // the legend's three stops and nothing between
+  let cum = [0]; for (let i = 1; i < sp.length; i++) cum.push(cum[i - 1] + Math.hypot(sp[i][0] - sp[i - 1][0], sp[i][1] - sp[i - 1][1]));
+  const total = cum[cum.length - 1];
+  // the loop is an out-and-back: the turnaround is the spot farthest from the start; the spots before it are the outbound leg, after it the return
+  const d0 = i => Math.hypot(sp[i][0] - sp[0][0], sp[i][1] - sp[0][1]);
+  let turn = 0; for (let i = 1; i < sp.length; i++) if (d0(i) > d0(turn)) turn = i;
+  // two lanes: every dot sits 3 px to the left of its own direction of travel, so where the return leg runs back over the outbound stretch the legs are 6 px apart and neither hides the other
+  // heading over three spots each way, so one jittered spot cannot flip a dot or the bracket to the other side
+  const head = i => { const [ax, ay] = P(sp[Math.max(0, i - 3)]), [bx, by] = P(sp[Math.min(sp.length - 1, i + 3)]); const l = Math.hypot(bx - ax, by - ay) || 1; return [(bx - ax) / l, (by - ay) / l]; };
+  const side = (i, dist) => { const [x, y] = P(sp[i]), [hx, hy] = head(i); return [x + hy * dist, y - hx * dist]; };
+  const rad = wide ? 5 : 3.5, off = 3, Q = i => side(i, off);
+  const mid = idx => { const a = idx.map(Q); return [a.reduce((s, p) => s + p[0], 0) / a.length, a.reduce((s, p) => s + p[1], 0) / a.length]; };
+  const strong = [], last = [];
+  cum.forEach((c, i) => { if (c >= 800 && c + 20 <= 1700) strong.push(i); if (c >= total - 400) last.push(i); });   // strong: the 37 spots 0.8 to 1.7 km in (indices 22 to 58; the spot at 1,697 m is the 1.7 km mark itself and is left out)
+  const nearStrong = i => i > turn && strong.some(j => { const a = P(sp[i]), b = P(sp[j]); return Math.hypot(a[0] - b[0], a[1] - b[1]) < 16; });   // return-leg dots running back over the bracketed stretch
+  let s = `<path d="${d}" fill="none" stroke="rgba(255,255,255,.32)" stroke-width="2" stroke-linejoin="round"/>`;   // the route: a plain 2 px line, no halo
+  sp.forEach((p, i) => { const [x, y] = Q(i); s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rad}" fill="${col(route.spots[i].storm_m)}"${nearStrong(i) ? ' opacity=".4"' : ''}/>`; });   // opaque dots, one colour stop each; the return lane dimmed to 40 percent beside the bracket so the outbound dots the caption describes stand out
+  // a thin bracket beside each captioned stretch: a 1 px line along the outer side of its lane, with a short tick at each end, and its middle is where the leader lands
+  const bracket = idx => {
+    const gap = off + rad + 5, pts = idx.map(i => side(i, gap)), tick = (i, p) => { const q = side(i, gap - 4); return `M${p[0].toFixed(1)} ${p[1].toFixed(1)}L${q[0].toFixed(1)} ${q[1].toFixed(1)}`; };
+    s += `<path d="${pts.map((p, j) => (j ? 'L' : 'M') + p.map(v => v.toFixed(1)).join(' ')).join('')}${tick(idx[0], pts[0])}${tick(idx[idx.length - 1], pts[pts.length - 1])}" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1" stroke-linejoin="round"/>`;
+    return pts[Math.floor(pts.length / 2)];
+  };
+  // captions sit off the line, with a leader from the stretch's bracket to the nearest edge of the box; returns the box's bottom edge
+  const amberIn = idx => { const m = Math.floor(idx.length / 2); for (let k = 0; k < idx.length; k++) for (const j of [m + k, m - k]) if (j >= 0 && j < idx.length) { const v = route.spots[idx[j]].storm_m; if (v > 0 && v < 3) return Q(idx[j]); } return mid(idx); };   // the amber dot nearest the bracket's middle
+  const cap = (idx, lines, fx, fy, end) => {                         // end: where the leader lands; the bracket's middle unless given
+    const bm = bracket(idx), [x, y] = end || bm, tw = Math.max(...lines.map(l => l.length)) * 7.1 + 14, th = lines.length * 21 + 10;
+    const tx = Math.max(20, Math.min(W - 20 - tw, fx)), ty = Math.max(padT, Math.min(H - 20 - th, fy));
+    const bx = tx + tw / 2, by = ty + th / 2, dx = bx - x, dy = by - y;
+    const f = Math.min(Math.abs(dx) > 1e-6 ? (tw / 2) / Math.abs(dx) : 1e9, Math.abs(dy) > 1e-6 ? (th / 2) / Math.abs(dy) : 1e9);
+    const ex = bx - dx * f, ey = by - dy * f;
+    s += `<line x1="${x.toFixed(1)}" y1="${y.toFixed(1)}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" stroke="rgba(255,255,255,.45)" stroke-width="1"/>`;
+    s += `<rect x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" width="${tw.toFixed(1)}" height="${th}" rx="4" fill="rgba(10,13,18,.9)"/>`;
+    lines.forEach((l, j) => { s += `<text class="${j ? 'lbl2' : 'lbl'}" x="${(tx + 7).toFixed(1)}" y="${ty + 21 + j * 21}">${l}</text>`; });
+    return ty + th;
+  };
+  const sm = mid(strong), lm = mid(last);
+  if (wide) {
+    cap(strong, ['Where snow hit hardest, 0.8 to 1.7 km in:', 'typical 3 m+ with no snow, typical 2 m in the storm (37 spots)'], sm[0] + 120, sm[1] + 64, amberIn(strong));   // on the bracket's side of the lane, so the leader crosses no dots
+    cap(last, ['The last 400 m, hard on both days', 'the road, not the weather', 'the loop ends where it starts'], lm[0] + 72, lm[1] + 16);
+  } else {                                                           // phone: the label box clears the route by well over 12 px, with the same leader as desktop
+    cap(strong, ['Where snow hit hardest,', '0.8 to 1.7 km in (37 spots):', 'typical 3 m+ no snow,', 'typical 2 m in the storm'], 20, sm[1] - 10, amberIn(strong));
+    const lastLines = ['The last 400 m, hard on both days', 'the road, not the weather'], textTop = $('b7').querySelector('.text').getBoundingClientRect().top - r.top;
+    const th3 = 3 * 21 + 10, ty3 = Math.max(padT, Math.min(H - 20 - th3, lm[1] + 44));
+    if (ty3 + th3 <= textTop - 12) lastLines.push('the loop ends where it starts');     // the third line only when the box stays clear of the heading
+    cap(last, lastLines, 20, lm[1] + 44);
+  }
+  svg.innerHTML = s;
+}
+function drawScanBg(id, grid) {                                          // the storm scan, faint, as the ground behind the loop (b7) and behind the clip (b8, with its 10 m grid)
+  const cv = $(id), L = state.layers.sw; if (!L || tier <= 1) return;
+  const r = cv.getBoundingClientRect(); if (!r.width) return;
+  cv.width = Math.round(r.width); cv.height = Math.round(r.height);
+  const g = cv.getContext('2d'); g.clearRect(0, 0, cv.width, cv.height);
+  const k = Math.max(cv.width / L.c.width, cv.height / L.c.height), ox = (cv.width - L.c.width * k) / 2, oy = (cv.height - L.c.height * k) / 2;
+  if (grid) {
+    const gp = 10 * V.ppmWide * V.dpr * k, gx = ox + V.cx * V.dpr * k, gy = oy + V.cy * V.dpr * k;
+    g.strokeStyle = 'rgba(255,255,255,.07)'; g.lineWidth = 1;
+    for (let x = gx % gp; x < cv.width; x += gp) { g.beginPath(); g.moveTo(Math.round(x) + .5, 0); g.lineTo(Math.round(x) + .5, cv.height); g.stroke(); }
+    for (let y = gy % gp; y < cv.height; y += gp) { g.beginPath(); g.moveTo(0, Math.round(y) + .5); g.lineTo(cv.width, Math.round(y) + .5); g.stroke(); }
+  }
+  g.drawImage(L.c, ox, oy, L.c.width * k, L.c.height * k);
+}
+function drawLoopBg() { drawScanBg('loopbg', false); if (V.wide) drawScanBg('clipbg', true); }
+
+/* ---------- beat 9: how many spots at each room, both days (counted from route.json) ---------- */
+function drawHist() {
+  const svg = $('hist'), W = Math.max(300, svg.parentElement.getBoundingClientRect().width || 600), H = innerWidth >= 1000 ? Math.max(300, Math.min(760, innerHeight - 320)) : 260;
+  const sizes = [0, ...route.sizes_m], lab = v => v === 0 ? '0' : v >= 3 ? '3 m+' : String(v);
+  const cs = sizes.map(v => route.spots.filter(s => s.storm_m === v).length), cc = sizes.map(v => route.spots.filter(s => s.clear_m === v).length);
+  const max = Math.max(...cs, ...cc), padL = 40, padR = 8, padT = 44, padB = 32, n = sizes.length;
+  const gw = (W - padL - padR) / n, bw = Math.min(36, gw * 0.38), sy = v => padT + (H - padT - padB) * (1 - v / max);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', W); svg.setAttribute('height', H);
+  let s = `<line class="ax" x1="${padL}" y1="${H - padB + .5}" x2="${W - padR}" y2="${H - padB + .5}"/>`;
+  [0, 100, 200].forEach(v => { if (v <= max) { s += `<line class="ax" x1="${padL}" y1="${sy(v).toFixed(1)}" x2="${W - padR}" y2="${sy(v).toFixed(1)}" stroke-dasharray="2 4"/><text class="t" x="${padL - 6}" y="${(sy(v) + 5).toFixed(1)}" text-anchor="end">${v}</text>`; } });
+  sizes.forEach((v, i) => {
+    const x0 = padL + gw * i + gw / 2;
+    s += `<rect class="bc" x="${(x0 - bw - 1).toFixed(1)}" y="${sy(cc[i]).toFixed(1)}" width="${bw}" height="${(H - padB - sy(cc[i])).toFixed(1)}"/>`;
+    s += `<rect class="bs" x="${(x0 + 1).toFixed(1)}" y="${sy(cs[i]).toFixed(1)}" width="${bw}" height="${(H - padB - sy(cs[i])).toFixed(1)}"/>`;
+    s += `<text class="t" x="${x0.toFixed(1)}" y="${H - padB + 20}" text-anchor="middle">${lab(v)}</text>`;
+    if (cc[i] >= 100 || cs[i] >= 100) { s += `<text class="ti" x="${(x0 - 1).toFixed(1)}" y="${(sy(cc[i]) - 6).toFixed(1)}" text-anchor="end">${cc[i]}</text><text class="ti" x="${(x0 + 1).toFixed(1)}" y="${(sy(cs[i]) - 6).toFixed(1)}" text-anchor="start">${cs[i]}</text>`; }
+  });
+  s += `<text class="t" x="${padL}" y="16">spots, by room for error in metres</text>`;
+  svg.innerHTML = s;
+}
+
+/* ---------- beat 10: the street a week earlier, dimmed, as the ending's figure. The same layer as beat 3, cropped to the figure's place on the stage. ---------- */
+let endDrawn = '';
+function drawEndFig() {
+  const fig = $('endfig'), cv = $('endcv'), r = fig.getBoundingClientRect(); if (!r.width || !r.height || tier <= 1) return;
+  const s = scans.clear && scans.clear.done ? scans.clear : (scans.storm && scans.storm.done ? scans.storm : null); if (!s) return;
+  const key = `${s === scans.clear}:${Math.round(r.width)}x${Math.round(r.height)}`; if (key === endDrawn) return; endDrawn = key;
+  const k = Math.min(2, devicePixelRatio || 1), W = Math.round(r.width * k), H = Math.round(r.height * k);
+  const g = cv.getContext('2d'), ppm = W / (V.wide ? 64 : 36), cx = W / 2, cy = V.wide ? H * 0.5 : H * 0.55;   // wide enough for both sides of the street
+  const P = pointPainter(g, W, H, k > 1.4 ? 2 : 1), boost = V.wide ? 0.65 : 0.9, n = s.n;                    // the points at the stage's own brightness (b1 to b3), not dimmed
+  runSliced('endfig', (function* () {
+    for (let i = 0; i < n; i += 25000) { P.scan(s, ppm, cx, cy, boost, i, Math.min(n, i + 25000)); yield; }
+    cv.width = W; cv.height = H; P.done();
+    g.save(); g.translate(cx, cy);                                                                               // the same filled car as b1 to b3, with its flat ground band
+    g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(0, 0, 1.2 * ppm, 2.7 * ppm, 0, 0, Math.PI * 2); g.fill();
+    paintCarMesh(g, ppm); g.restore();
+  })());
+}
+
+/* ---------- beat 8: the clip. The camera half is copied into the inset canvas while it plays. ---------- */
+function setupClip() {
+  const v = $('clip'), cv = $('camcv'), g = cv.getContext('2d'), sec = $('b8');
+  const posterImg = new Image(); let armed = false, raf = 0;
+  const drawCam = () => {
+    if (v.readyState >= 2) g.drawImage(v, 0, 0, 720, 640, 0, 0, cv.width, cv.height);
+    else if (posterImg.complete && posterImg.naturalWidth) g.drawImage(posterImg, 0, 0, posterImg.naturalWidth, posterImg.naturalHeight / 2, 0, 0, cv.width, cv.height);
+  };
+  const loop = () => { drawCam(); raf = v.paused ? 0 : requestAnimationFrame(loop); };
+  const attach = () => { posterImg.onload = drawCam; posterImg.src = 'media/part2_poster.webp'; v.src = v.dataset.src; v.load(); };
+  const arm = now => { if (armed) return; armed = true; if (now || !('requestIdleCallback' in window)) attach(); else requestIdleCallback(attach, { timeout: 300 }); };
+  new IntersectionObserver(es => { if (es[0].isIntersecting) arm(false); }, { rootMargin: '100% 0px' }).observe(sec);   // one screen early: attach the src in an idle slice, not in the scroll frame
+  new IntersectionObserver(es => { if (es[0].isIntersecting) { arm(true); v.play().catch(() => {}); } else v.pause(); }, { threshold: .3 }).observe(sec);
+  v.addEventListener('play', () => { cancelAnimationFrame(raf); loop(); });
+  v.addEventListener('pause', () => { cancelAnimationFrame(raf); raf = 0; drawCam(); });
+  v.addEventListener('loadeddata', drawCam);
+  const toggle = () => { if (!armed) arm(true); if (v.paused) v.play().catch(() => {}); else v.pause(); };
+  v.addEventListener('click', toggle); cv.addEventListener('click', toggle);
+}
+
+/* ---------- build ---------- */
+function build() {
+  measure();
+  state.layers = {}; jobs.length = 0;
+  if (tier > 1) {
+    if (scans.storm) { for (const k of NEED[state.name]) queue(k); queue('sw'); queue('nw'); }
+    if (scans.clear) { queue('cw'); queue('cnw'); }
+    placeStatic(); if (scans.storm && scans.storm.done) placeData(scans.storm); drawFrame();
+  } else placeStatic();
+  drawBars(); drawLoop(); drawHist(); if (route) { updateTry(); drawTry(); }
+  endDrawn = ''; drawEndFig();
+  if (scans.storm && scans.storm.done) queue('sw', drawLoopBg);
+}
+let clearStarted = false;
+async function loadClear() {
+  if (clearStarted || tier <= 1) return; clearStarted = true;
+  await streamScan('clear', () => {});
+  queue('cw'); queue('cnw'); endDrawn = ''; drawEndFig(); if (tryArmed) drawTryPanel('clear');
+}
+
+(async () => {
+  const scansMeta = fetch('data/scans.json').then(r => r.json());
+  const routeJob = fetch('data/route.json').then(r => r.json());
+  if (tier > 1) {
+    // the storm scan streams in and is drawn in slices as it arrives: lowest density first, settled when the file ends
+    streamScan('storm', s => { if (!state.layers.sw) { measure(); queue('sw'); queue('nw'); placeStatic(); } schedule(); }).then(s => {
+      placeData(s);
+      const after = () => { queue('sc'); queue('nc'); drawLoopBg(); drawEndFig(); if (tryArmed) drawTryPanel('storm'); };
+      if ('requestIdleCallback' in window) requestIdleCallback(after); else setTimeout(after, 400);
+      return loadCar().then(c => { car = c; if (!state.anim) drawFrame(); window.__snow.ready = true; });
+    });
+  } else { measure(); placeStatic(); window.__snow.ready = true; }
+  scansMeta.then(scansJ => {
+    $('sensor').innerHTML = `Velodyne Alpha Prime, 128 ch.<span class="when">Boreas, Toronto. ${stamp(scansJ.storm.scan_time_us)}</span>`;
+    $('sensor2').innerHTML = `Velodyne Alpha Prime, 128 ch.<span class="when">Boreas, Toronto. ${stamp(scansJ.clear.scan_time_us)}</span>`;
+  });
+  route = await routeJob;
+  hero = route.spots.find(s => s.id === route.hero.id);
+  buildMarks(); buildTry(); drawBars(); drawLoop(); drawHist(); setupClip();
+  if (!state.layers.sw) { measure(); placeStatic(); }
+  Object.assign(window.__snow, { state, V, STATES, drawFrame, setState, scans });
+
+  // which state is on screen: the one that covers the middle of the viewport. Forward: one timed move. Backward: at once.
+  const marks = [...document.querySelectorAll('[data-state]')];
+  let shown = -1;
+  const pick = () => {
+    const mid = innerHeight / 2;
+    let i = marks.findIndex(m => { const r = m.getBoundingClientRect(); return r.top <= mid && r.bottom > mid; });
+    if (i < 0) i = scrollY < 10 ? 0 : (marks[0].getBoundingClientRect().top > mid ? 0 : marks.length - 1);
+    if (i !== shown) { const fwd = i > shown && shown >= 0; shown = i; setState(marks[i].dataset.state, tier > 1 && fwd); }
+  };
+  pick();
+  addEventListener('scroll', pick, { passive: true });
+  // draw only while the stage is on screen
+  new IntersectionObserver(es => { state.visible = es[0].isIntersecting; if (!state.visible) { cancelAnimationFrame(state.anim); state.anim = 0; } else if (tier > 1) drawFrame(); }).observe(stage);
+  // the clear scan and the try-it images load when their beats are within two screens
+  new IntersectionObserver((es, io) => { if (es.some(e => e.isIntersecting)) { loadClear(); io.disconnect(); } }, { rootMargin: '200% 0px' }).observe($('b3'));
+  new IntersectionObserver((es, io) => { if (es.some(e => e.isIntersecting)) { tryArmed = true; updateTry(); io.disconnect(); } }, { rootMargin: '200% 0px' }).observe($('b5'));
+  new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) drawEndFig(); }, { rootMargin: '150% 0px' }).observe($('b10'));
+  // the header follows the page theme over the two text sections
+  const io = new IntersectionObserver(es => { document.body.classList.toggle('on-light', es.some(e => e.isIntersecting && e.boundingClientRect.top <= 60)); }, { rootMargin: '-0px 0px -95% 0px' });
+  io.observe($('b9')); io.observe($('b10'));
+  let lastW = innerWidth, lastH = innerHeight, timer = 0;
+  addEventListener('resize', () => {
+    if (innerWidth === lastW && Math.abs(innerHeight - lastH) < 160) return;   // ignore the phone url bar
+    clearTimeout(timer); timer = setTimeout(() => { lastW = innerWidth; lastH = innerHeight; build(); shown = -1; pick(); }, 150);
+  });
+  canvas.addEventListener('contextlost', () => { goNogl(); });
+})();
+</script>
+</body>
+</html>

@@ -4,7 +4,51 @@ __pycache__/
 .pytest_cache/
 .DS_Store
 # data never goes in the repo; it lives in ~/snowbound-data
-data/
+/data/
 runs/
 *.bin
 *.mp4
+
+# site: the published page needs its own video and binary scan files
+!docs/media/*.mp4
+!docs/data/*.bin
+# the old page's posters are not used by the live page
+docs/media/hero_tall_poster.webp
+docs/media/hero_wide_poster.webp
+docs/media/hero_scan_poster.webp
+# drafts, agent workspaces and screen recordings stay local
+.claude/
+docs/next/
+results/site_shots/
+results/*.mp4
+README.draft.md
+notes/TASTE.md
+notes/LESSONS.md
+notes/redesign-*.md
+notes/site-references*.md
+notes/part2-post.md
+notes/part2-script-and-post.md
+notes/headline-zlock.md
+notes/readme-additions.md
+
+# the live page loads only three spots' lidar views; the other 2,162 spot images stay local (73 MB)
+docs/media/spots/*
+!docs/media/spots/003_005_storm_lidar.webp
+!docs/media/spots/003_005_clear_lidar.webp
+!docs/media/spots/007_006_storm_lidar.webp
+!docs/media/spots/007_006_clear_lidar.webp
+!docs/media/spots/009_009_storm_lidar.webp
+!docs/media/spots/009_009_clear_lidar.webp
+# the old page's hero clips are not used by the live page
+docs/media/hero_tall.mp4
+docs/media/hero_wide.mp4
+# scroll recordings and large renders
+*.webm
+results/*_2160.png
+results/*_2160.mp4
+
+# redesign reference notes stay local
+notes/site-scroll-references.md
+# large render stills from the reel work stay local; the README copies live in docs/media
+results/part2_*.png
+results/readme_result.png

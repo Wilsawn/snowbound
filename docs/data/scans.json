@@ -1,0 +1,25 @@
+{
+ "storm": {
+  "file": "data/scan_storm.bin",
+  "points": 200000,
+  "of": 1010078,
+  "scans": 5,
+  "scan_time_us": 1611678418256897,
+  "layout": "int16 x y z (cm, z above the road), uint8 brightness, uint8 snow",
+  "snow_points": 23332,
+  "east": -330.46,
+  "north": 643.42
+ },
+ "clear": {
+  "file": "data/scan_clear.bin",
+  "points": 200000,
+  "of": 811174,
+  "scans": 5,
+  "scan_time_us": 1611087121706574,
+  "layout": "int16 x y z (cm, z above the road), uint8 brightness, uint8 snow",
+  "snow_points": 9905,
+  "east": -330.28,
+  "north": 643.6
+ },
+ "gap_between_scans_m": 0.26
+}

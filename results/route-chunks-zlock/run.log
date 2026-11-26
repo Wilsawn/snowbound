@@ -1,0 +1,27 @@
+271 paired test points (271 in the original run), 0 differ from the original pairing
+  chunk 0: 12 points, 50 map scans, 10568 s (10568 s elapsed)
+  chunk 1: 12 points, 168 map scans, 11367 s (11367 s elapsed)
+  chunk 4: 12 points, 94 map scans, 12091 s (12092 s elapsed)
+  chunk 5: 12 points, 113 map scans, 12159 s (12160 s elapsed)
+  chunk 3: 12 points, 792 map scans, 12486 s (12487 s elapsed)
+  chunk 2: 12 points, 374 map scans, 12561 s (12561 s elapsed)
+  chunk 6: 12 points, 65 map scans, 4415 s (14983 s elapsed)
+  chunk 11: 12 points, 35 map scans, 3038 s (15600 s elapsed)
+  chunk 7: 12 points, 68 map scans, 4613 s (15980 s elapsed)
+  chunk 8: 12 points, 71 map scans, 4452 s (16544 s elapsed)
+  chunk 10: 12 points, 284 map scans, 5582 s (18069 s elapsed)
+  chunk 9: 12 points, 327 map scans, 9679 s (21838 s elapsed)
+  chunk 12: 12 points, 221 map scans, 10265 s (25248 s elapsed)
+  chunk 14: 12 points, 70 map scans, 10569 s (26549 s elapsed)
+  chunk 16: 12 points, 67 map scans, 9000 s (27068 s elapsed)
+  chunk 15: 12 points, 72 map scans, 10673 s (27217 s elapsed)
+  chunk 13: 12 points, 381 map scans, 12325 s (27924 s elapsed)
+  chunk 17: 12 points, 43 map scans, 7426 s (29265 s elapsed)
+  chunk 22: 7 points, 33 map scans, 2832 s (30756 s elapsed)
+  chunk 18: 12 points, 108 map scans, 5704 s (30952 s elapsed)
+  chunk 19: 12 points, 766 map scans, 4943 s (31492 s elapsed)
+  chunk 21: 12 points, 133 map scans, 4656 s (31873 s elapsed)
+  chunk 20: 12 points, 429 map scans, 5374 s (32443 s elapsed)
+wrote results/route_storm_zlock.csv: 271 points, median basin 2.50 m, 120 capped, dz max 0.0000 m
+wrote results/route_control_zlock.csv: 271 points, median basin 3.00 m, 202 capped, dz max 0.0000 m
+wrote results/route_pairs_zlock.csv: 271 pairs, storm minus control median +0.00 m, storm smaller at 111, bigger at 18, same at 142
