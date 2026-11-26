@@ -6,7 +6,7 @@ Plain words:
     5 deg heading error, 3.5 m window, recovered = under 0.3 m and 2 deg), but the point-to-plane matcher may only
     move the scan in x, y and yaw. The 23 November check (notes/critic-most-affected.md) found the free matcher
     sinks moving storm scans about 2.5 m so the snow in the air lands on the road, which the test counted as a failure.
-  - Every chunk is written as it finishes to results/route-chunks-zlock/ with a .done marker, so a stopped run resumes.
+  - Every chunk is written as it finishes to results/chunks/route-chunks-zlock/ with a .done marker, so a stopped run resumes.
   - Results go to NEW files: results/route_storm_zlock.csv, route_control_zlock.csv, route_pairs_zlock.csv. The
     originals are not touched. Each row also carries dz_max_m: the largest height change the matcher made at that
     point over every run (it should be 0 with the lock; it is measured, not assumed).
@@ -14,7 +14,7 @@ Plain words:
     original results/route_storm.csv and route_control.csv.
 
 Run:  cd ~/snowbound && nice -n 19 uv run python scripts/sweep_route_zlock.py --workers 6 --chunk 12
-Test: nice -n 19 uv run python scripts/sweep_route_zlock.py --max-points 2 --workers 1 --outdir results/route-chunks-zlock-test --suffix _zlocktest
+Test: nice -n 19 uv run python scripts/sweep_route_zlock.py --max-points 2 --workers 1 --outdir results/chunks/route-chunks-zlock-test --suffix _zlocktest
 """
 import argparse
 import sys
@@ -113,7 +113,7 @@ def main():
     ap.add_argument("--workers", type=int, default=6)
     ap.add_argument("--max-points", type=int, default=0)
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--outdir", default="results/route-chunks-zlock")
+    ap.add_argument("--outdir", default="results/chunks/route-chunks-zlock")
     ap.add_argument("--suffix", default="_zlock")
     a = ap.parse_args()
     pts = pick_points(a.spacing, a.max_gap, a.max_points)

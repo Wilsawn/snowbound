@@ -16,7 +16,7 @@ Plain words:
 The raster takes a few minutes, so it is cached as an .npz in --cache (outside results/).
 
 Run:
-  uv run python scripts/plot_street_map.py --layout A --vmin 0 --size 1080 --out results/street_map_0to3.png
+  uv run python scripts/reel/plot_street_map.py --layout A --vmin 0 --size 1080 --out results/street_map_0to3.png
 """
 import argparse
 import sys
@@ -31,8 +31,8 @@ from matplotlib.patches import FancyBboxPatch  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from snowbound import loader  # noqa: E402
 from score_60s import load_points, pose_matrix  # noqa: E402
 from plot_basin_map import read_sweep  # noqa: E402

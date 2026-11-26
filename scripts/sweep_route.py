@@ -146,7 +146,7 @@ def main():
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--max-points", type=int, default=0)
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--outdir", default="results/route-chunks")
+    ap.add_argument("--outdir", default="results/chunks/route-chunks")
     a = ap.parse_args()
     pts = pick_points(a.spacing, a.max_gap, a.max_points)
     gaps = [p["gap"] for p in pts]

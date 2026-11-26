@@ -43,3 +43,7 @@ notes/push-list-*.txt
 docs/scan_poster.webp
 # a note that was only a to-do for the README
 notes/readme-additions.md
+
+# internal checking logs and an unrelated dataset note stay local
+results/critic/
+notes/boreas-rt-routes.md

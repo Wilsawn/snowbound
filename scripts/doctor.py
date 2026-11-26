@@ -20,7 +20,7 @@ print(f"Python {sys.version.split()[0]}  at {sys.executable}")
 check("Python 3.12", sys.version_info[:2] == (3, 12))
 
 print("Tools:")
-for mod in ["numpy", "scipy", "pandas", "yaml", "matplotlib", "rerun", "open3d", "kiss_icp", "evo", "pytest"]:
+for mod in ["numpy", "scipy", "pandas", "matplotlib", "PIL", "pytest"]:
     try:
         m = importlib.import_module(mod)
         check(mod, True, getattr(m, "__version__", "?"))

@@ -1,7 +1,7 @@
 > Superseded on Nov 23, 2026: the numbers below are from the free matcher. The height-locked rerun (notes/results-zlock.md) is what the site shows now: smaller at 111, same at 142, bigger at 18; medians unchanged.
 
 # Whole route: room for error, storm vs no snow falling, 7.4 km (Nov 22, 2026)
-Builder run, then a separate critic checked every number against the CSVs. Scripts: scripts/fetch_route.py (data), scripts/sweep_route.py (sweep). Raw CSVs: results/route_storm.csv, results/route_control.csv, results/route_pairs.csv, per-chunk files in results/route-chunks/. The 460 m study this extends: notes/results-storm-vs-control.md.
+Builder run, then a separate critic checked every number against the CSVs. Scripts: scripts/fetch_route.py (data), scripts/sweep_route.py (sweep). Raw CSVs: results/route_storm.csv, results/route_control.csv, results/route_pairs.csv, per-chunk files in results/chunks/route-chunks/. The 460 m study this extends: notes/results-storm-vs-control.md.
 
 ## The question
 The first study covered about 430 m of one street. Does "falling snow shrinks the car's room for error" hold over the whole loop, or was that street special?

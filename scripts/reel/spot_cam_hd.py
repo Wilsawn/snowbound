@@ -7,7 +7,7 @@ This script takes the same video frame (the camera pose row nearest the scan tim
 and writes one 960 x 694 WebP at quality 82 per spot and day, overwriting the 480 px copy.
 Nothing else in docs/data/route.json changes (same file names).
 
-Run: uv run python scripts/spot_cam_hd.py [--only 003_005]
+Run: uv run python scripts/reel/spot_cam_hd.py [--only 003_005]
 """
 import json
 import subprocess
@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from build_site import DOCS, STORM, CONTROL, Drive  # noqa: E402
 
 

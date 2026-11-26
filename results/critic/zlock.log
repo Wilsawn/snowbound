@@ -1,3 +1,0 @@
-{'pair': '000_000', 'zlock_basin_m': 2, 'zlock_capped': 0, 'zlock_ok_per_size': '8|8|8|8|8|8|8|7|6|2', 'orig_basin_m': 1.75, 'orig_ok': '8|8|8|8|8|8|8|5|2|0'}
-{'pair': '000_001', 'zlock_basin_m': 3, 'zlock_capped': 1, 'zlock_ok_per_size': '8|8|8|8|8|8|8|8|8|8', 'orig_basin_m': 0.0, 'orig_ok': '6|5|8|4|5|5|6|4|3|3'}
-{'pair': '000_002', 'zlock_basin_m': 3, 'zlock_capped': 1, 'zlock_ok_per_size': '8|8|8|8|8|8|8|8|8|7', 'orig_basin_m': 0.0, 'orig_ok': '5|6|5|4|4|4|2|3|1|1'}

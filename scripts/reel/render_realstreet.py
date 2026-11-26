@@ -16,14 +16,14 @@ Plain words:
     eased between test points, drawn under the car. The label holds one value per half.
   - First the snowstorm (Jan 26 2021), then a hard cut to the no-snow day (Jan 19 2021), both
     starting at the same spot on the road, each in real time. The no-snow camera needs that
-    drive's video.mp4 and camera_poses.csv (scripts/fetch_control_camera.py); until they exist
+    drive's video.mp4 and camera_poses.csv (scripts/reel/fetch_control_camera.py); until they exist
     its top half says so.
 
 Frames are written at 2160x3840 (two halves of 2160x1920). ffmpeg makes the mp4 and a 1080x1920 copy.
 
 Run:
-  uv run python scripts/render_realstreet.py --look D2 --still 38 --out results/sketch.png
-  uv run python scripts/render_realstreet.py --look D2 --frames-dir /tmp/rs_frames
+  uv run python scripts/reel/render_realstreet.py --look D2 --still 38 --out results/sketch.png
+  uv run python scripts/reel/render_realstreet.py --look D2 --frames-dir /tmp/rs_frames
 """
 import argparse
 import subprocess
@@ -36,8 +36,8 @@ import pandas as pd
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont
 from scipy.spatial import cKDTree
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from snowbound import loader  # noqa: E402
 from score_60s import pose_matrix, load_points  # noqa: E402
 from plot_basin_map import read_sweep  # noqa: E402

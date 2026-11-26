@@ -24,7 +24,7 @@ make setup    # Python 3.12 env via uv
 make doctor   # checks tools and data
 make test     # runs the tests
 ```
-Data lives in `~/snowbound-data` (or set `SNOWBOUND_DATA`). Download the drives with `scripts/fetch_boreas.py` and `scripts/fetch_route.py`. The whole-route test is `scripts/sweep_route_zlock.py` (results in `results/route_*_zlock.csv`, compared by `scripts/compare_zlock.py`); the site's data file `docs/data/route.json` is built by `scripts/build_site.py`.
+Data lives in `~/snowbound-data` (or set `SNOWBOUND_DATA`). Download the drives with `scripts/fetch_boreas.py` and `scripts/fetch_route.py` (about 25 GB for the three drives used here). The whole-route test is `scripts/sweep_route_zlock.py` (results in `results/route_*_zlock.csv`, compared by `scripts/compare_zlock.py`); the site's data file `docs/data/route.json` is built by `scripts/build_site.py`.
 
 ## How it was measured
 The map is the same loop driven in clear weather on 26 Nov 2020. The matcher is point-to-plane ICP (scipy) with the car's height locked to the road; it may only slide and turn. A push is recovered if the scan lands within 30 cm and 2 degrees of the truth, and a size passes when 7 of 8 directions recover. Room for error is the biggest push that passed before the first size that failed. An earlier run let the matcher sink storm scans about 2.5 m so the snow in the air landed on the road, which counted failures that were not failures; it said 147 spots. With the height locked the honest count is 111.
@@ -32,13 +32,14 @@ The map is the same loop driven in clear weather on 26 Nov 2020. The matcher is 
 Limits: one drive per kind of weather, so this is a lead, not a law. 202 no-snow spots and 120 storm spots hit the 3 m cap, so the real gap is at least what the numbers show. 12 spots fail the smallest push on both days: the method, not the snow. The last 400 m is hard on both days: the road, not the weather. Every value is good to about half a metre. The height lock (23 Nov 2026) changed 101 storm values and 17 no-snow values; the count of spots where snow cut the room went from 147 to 111, the typical values did not move, and 18 storm spots still read 0 m, 12 of them on both days (the free-matcher numbers stay in results/ for comparison). The two days differ in more than falling snow: a week of parked cars and snowbanks, and the no-snow car drove faster. The map is thinner over most of the loop than on the first street measured; re-running that street gave the same conclusion but storm values about one step smaller. The result holds for these matcher settings; a wider search window recovers more often and makes the numbers bigger. Neighbouring spots share road, so the counts are not independent trials. On the site, the dashcam frames are untouched apart from a light grade on the opening photo, and the falling snow drawn over that photo is an effect, not data; the lidar scans are real scans with only the car's own body (within 3 m) and points beyond 60 m removed, thinned at random to 200,000 points each in the files, drawn as 150,000 on a fast computer, 80,000 on most and 40,000 on phones.
 
 ## Status
-- [x] Step 1: setup, loader, data tests
-- [x] Step 2: first numbers on a 60 s stretch (`notes/results-60s-storm.md`)
-- [x] Step 3: stress test over the whole loop, both days, height locked (`notes/results-zlock.md`)
-- [x] Step 6: results page (`docs/`) and the clip
-- [ ] Reproduce the paper's 2.3 cm with open tools (KISS-ICP, Open3D, evo)
-- [ ] One fix: a snowflake filter (DROR) on the raw scans
-- [ ] One core piece in C++
+Done: the loader and data checks, the first 60 s test, the whole-loop stress test on both days with the height locked, the why-spots analysis, the site and the clip. Not done: reproducing the paper's 2.3 cm with open tools, a snowflake filter on the raw scans.
+
+## Repo map
+- `docs/`: the site (one page, its data files and media). GitHub Pages serves it from here.
+- `notes/`: the write-ups; `notes/README.md` says what to read first.
+- `results/`: the CSVs and figures; `results/README.md` says which file is which.
+- `scripts/`: the code that made every number and image; `scripts/README.md` maps scripts to outputs. `src/snowbound/loader.py` reads the Boreas files.
+- `tests/`: three checks on the data layout (they skip when the data is not on disk).
 
 Built by Wilsawn Dideh.
 

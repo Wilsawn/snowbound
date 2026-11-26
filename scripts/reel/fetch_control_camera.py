@@ -13,15 +13,15 @@ Two ways to get the pictures, pick one with the first argument:
            for 12 s is about 120 files.
 
 Run (dry run first, then add --go yourself):
-  uv run python scripts/fetch_control_camera.py video  --out ~/snowbound-data
-  uv run python scripts/fetch_control_camera.py frames --out ~/snowbound-data --start 3:45 --seconds 60 --cam-hz 10
+  uv run python scripts/reel/fetch_control_camera.py video  --out ~/snowbound-data
+  uv run python scripts/reel/fetch_control_camera.py frames --out ~/snowbound-data --start 3:45 --seconds 60 --cam-hz 10
 """
 import argparse
 import os
 import shutil
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import fetch_boreas as fb  # the original, unchanged downloader
 
 CONTROL = "boreas-2021-01-19-15-08"

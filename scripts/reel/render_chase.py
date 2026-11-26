@@ -14,8 +14,8 @@ Plain words:
     are at the same spot in both panels even though the control car drove faster.
 
 Run:
-  uv run python scripts/render_chase.py --look A --still 347 --out results/sketch_A.png      # one still at 347 m along
-  uv run python scripts/render_chase.py --look A --seconds 12 --fps 30 --frames-dir /tmp/chase  # all frames
+  uv run python scripts/reel/render_chase.py --look A --still 347 --out results/sketch_A.png      # one still at 347 m along
+  uv run python scripts/reel/render_chase.py --look A --seconds 12 --fps 30 --frames-dir /tmp/chase  # all frames
 """
 import argparse
 import sys
@@ -30,8 +30,8 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 from scipy.spatial import cKDTree  # noqa: E402
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from snowbound import loader  # noqa: E402
 from score_60s import pose_matrix, load_points  # noqa: E402
 from plot_basin_map import read_sweep  # noqa: E402

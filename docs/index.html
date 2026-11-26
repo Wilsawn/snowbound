@@ -766,7 +766,7 @@ fetch("data/route.json?v=4").then(r=>r.json()).then(j=>{
     window.heroIdx=j.spots.findIndex(s=>s.id===j.hero.id); if(heroIdx>=0) document.getElementById("b5-lab").textContent=`the storm, spot ${heroIdx+1} on the map`;
   document.getElementById("b4-storm").textContent=`${j.hero.storm_m}\u00a0m`; GUESS.here=j.hero.storm_m; GUESS.typical=j.storm_median_m; if(window.heroScene&&heroBeat>=2) heroScene(heroBeat,false);
     const k=j.spots.findIndex(s=>s.id===j.hero.id); if(k>=0){selected=k;show(j.spots[k],k,false);}}
-  // the clip starts at spot 002_011 (scripts/render_realstreet.py, start 1611678399605530 us), a little before the opening spot: its burned-in values are that spot's
+  // the clip starts at spot 002_011 (scripts/reel/render_realstreet.py, start 1611678399605530 us), a little before the opening spot: its burned-in values are that spot's
   {const c=j.spots.findIndex(s=>s.id==="002_011"); if(c>=0){const s=j.spots[c]; document.getElementById("clipnote").textContent=`It starts at spot ${c+1}, a little before the opening spot: ${fmt(s.storm_m,s.storm_capped)} in the storm, ${fmt(s.clear_m,s.clear_capped)} with no snow.`;}}
   readScroll(); if(driveBeat<0&&(driveST.isActive||driveST.progress>=1)) setDriveBeat(driveBeatAt());
 });

@@ -7,12 +7,8 @@ dependencies = [
     "numpy",
     "scipy",
     "pandas",
-    "pyyaml",
     "matplotlib",
-    "rerun-sdk",
-    "open3d",
-    "kiss-icp",
-    "evo",
+    "pillow",
 ]
 
 [dependency-groups]
