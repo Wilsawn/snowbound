@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Written with Claude (AI), Nov 25 2026. Why did snow hurt at some spots and not others?
+"""Why did snow hurt at some spots and not others?
 
 Hypothesis (unproven): snow hurts most on wide open roads with little structure nearby.
 

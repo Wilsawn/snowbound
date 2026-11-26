@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Written with Claude (AI), Nov 20 2026. Blind budget sweep, prototype. See notes/blind-budget.md.
+"""Blind budget sweep, prototype. See notes/blind-budget.md.
 
 For test points every --spacing metres along a stretch of a test drive:
   - push the starting guess off by each size in --offsets (metres), in --dirs directions,

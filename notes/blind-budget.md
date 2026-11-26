@@ -1,5 +1,5 @@
 # Blind budget: design (v2, after critic review)
-Written with Claude (AI), Nov 20 2026. Builder draft, then a separate critic, then fixes.
+Nov 20 2026. First draft, then a separate check, then fixes.
 
 ## 1. The question
 At each place on the route, how far off can the car's position guess be (after its lidar was blind for a while) and still let scan-to-map ICP re-find it, on a day with falling snow vs a day without?

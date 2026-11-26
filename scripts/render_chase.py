@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Written with Claude (AI), Nov 21 2026. Chase-cam lidar clips for the part 2 reel (top half of a split screen).
+"""Chase-cam lidar clips for the part 2 reel (top half of a split screen).
 
 Plain words:
   - For a stretch of one drive, show each lidar scan from a camera that floats behind and above

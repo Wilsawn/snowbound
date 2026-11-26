@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Written with Claude (AI), Nov 21 2026. Draws the "Blind budget" map from two sweep_basin.py CSVs.
+"""Draws the "Blind budget" map from two sweep_basin.py CSVs.
 
 Plain words: each test point on the road gets a colour for its basin radius, the biggest starting
 error that scan-to-map ICP still recovered from. Green = big margin (the car can be far off and

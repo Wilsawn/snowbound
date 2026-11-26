@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Written with Claude (AI), Nov 21 2026. Pairs storm and control basin test points by location and
+"""Pairs storm and control basin test points by location and
 prints the storm-minus-control difference. Plain words: for every storm test point, find the
 control test point closest to it on the road (within --max-gap metres). Then compare the two
 basin radii. A negative difference means the storm day had a smaller margin at that spot.

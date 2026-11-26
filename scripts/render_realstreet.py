@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Written with Claude (AI), Nov 21 2026. Part 2 reel: "real street + what the lidar sees".
+"""Part 2 reel: "real street + what the lidar sees".
 
 Plain words:
   - Top half of a vertical frame: the car's real front camera at that moment (from the drive's

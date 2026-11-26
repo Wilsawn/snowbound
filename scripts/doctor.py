@@ -46,5 +46,5 @@ for drive, need_scans in [(loader.MAP_DRIVE, True), (loader.SNOW_DRIVE, True), (
         _, gap = loader.nearest_pose(poses, loader.scan_time_us(mid))
         check(f"{drive} scan has a pose within 5 ms", gap <= 5000, f"{gap / 1000:.2f} ms")
 
-print("\nAll good." if ok else "\nSomething failed. Paste this output to Claude.")
+print("\nAll good." if ok else "\nSomething failed. Fix the lines marked FAIL.")
 sys.exit(0 if ok else 1)

@@ -1,5 +1,5 @@
 # Boreas Road Trip (Boreas-RT): routes, weather, sizes (checked Nov 23 2026)
-Written with Claude (AI). Sources: paper arXiv 2602.16870 (v3, Oct 28 2026), the public S3 bucket s3://boreas (listed directly), and Open-Meteo historical weather (a model reanalysis, roughly 9 km grid, NOT a ground observation: confirm with the camera frames before claiming anything).
+Sources: paper arXiv 2602.16870 (v3, Oct 28 2026), the public S3 bucket s3://boreas (listed directly), and Open-Meteo historical weather (a model reanalysis, roughly 9 km grid, NOT a ground observation: confirm with the camera frames before claiming anything).
 
 ## The 9 routes (paper Table 3) and which bucket sequences they are
 Route types matched to sequences by start/end GPS position, loop vs one-way, and duration. The paper does not publish this mapping, so it is our inference: check each one against the paper's route lengths before use.

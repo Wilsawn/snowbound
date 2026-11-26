@@ -1,5 +1,5 @@
 # Burnett et al., in plain words
-Written with Claude (AI), Nov 20 2026, checked by a separate critic against the paper.
+Nov 20 2026, checked against the paper.
 
 **Version warning:** this guide uses arXiv **v3** (8 Jun 2023), which updated the ground truth and the results. v1/v2 (the 2022 RA-L version, titled "Should Radar Replace Lidar...") report different lidar numbers for the storm: **4.7 cm lateral**, not 2.3 cm. Always say which version you compare against.
 
@@ -29,13 +29,13 @@ So "2.3 cm" = v3 lidar-to-lidar lateral RMSE on the snowstorm drive.
 
 ## 4. Checklist for a fair reproduction
 - [ ] Map drive 2020-11-26, test drive 2021-01-26
-- [ ] Map from lidar only (if you use ground-truth poses to build it, say so)
+- [ ] Map from lidar only (if the map is built from ground-truth poses, say so)
 - [ ] Point-to-plane matching, 0.3 m voxels
 - [ ] Motion-compensate scans before matching
 - [ ] Starting guess from odometry, not from ground truth
 - [ ] Score lateral / longitudinal / heading separately in 2D (evo does not split lateral vs longitudinal; compute it yourself)
 - [ ] No IMU or wheel data
-What will likely differ with your tools: KISS-ICP uses its own point-to-point ICP and constant-velocity deskewing (not CT-ICP; this is from the tool's docs, not the paper); Open3D ICP has no prior term; one global map behaves differently from a chain of submaps.
+What will likely differ with the open tools used here: KISS-ICP uses its own point-to-point ICP and constant-velocity deskewing (not CT-ICP; this is from the tool's docs, not the paper); Open3D ICP has no prior term; one global map behaves differently from a chain of submaps.
 
 ## 5. Five terms
 - **ICP:** repeatedly match nearest points and solve for the best pose until it stops changing.
@@ -45,7 +45,7 @@ What will likely differ with your tools: KISS-ICP uses its own point-to-point IC
 - **RMSE:** square each error, average, take the square root. Big misses count extra.
 
 ## 6. Watch out
-- 2.3 cm is inside the ground truth's own 2 to 4 cm error, so at that level you cannot tell who is right.
+- 2.3 cm is inside the ground truth's own 2 to 4 cm error, so at that level no one can tell who is right.
 - Snow was not lidar's worst drive: 2020-12-04 was (6.0 cm lateral in v3).
 - The text points to "Table IV" for localization results, but the numbers are in Table I. Some figure references are broken.
 - **The paper never tests a bad starting guess.** No baseline exists for the blind budget, which is the opening for Snowbound.

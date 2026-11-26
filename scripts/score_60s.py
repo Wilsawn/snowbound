@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Written with Claude (AI), Nov 20 2026. Step 2 first numbers. Not final project code.
+"""Step 2 first numbers. Not final project code.
 
 What it does, in plain words:
   1. Build a small 3D map of the road from the MAP drive (Nov 26 2020), placing each map scan
@@ -50,8 +50,8 @@ def rot_z(a):
 
 def pose_matrix(row, origin):
     """4x4 pose of the lidar in a local east-north-up frame (metres, origin subtracted).
-    Same rotation convention as Claude's Nov 19 exploration, which lined scans up to about 10 cm.
-    test_heading_sign (Delo's test) should confirm this convention."""
+    Same rotation convention as the Nov 19 exploration, which lined scans up to about 10 cm.
+    test_heading_sign should confirm this convention."""
     T = np.eye(4)
     T[:3, :3] = (rot_z(row.heading) @ rot_y(row.pitch) @ rot_x(row.roll)).T
     T[:3, 3] = np.array([row.easting, row.northing, row.altitude]) - origin

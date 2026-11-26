@@ -1,5 +1,5 @@
 # First numbers: 60 s of the storm drive (Nov 20, 2026)
-Produced by scripts/score_60s.py (Written with Claude). Raw per-scan CSVs: results/storm-60s/.
+Produced by scripts/score_60s.py. Raw per-scan CSVs: results/storm-60s/.
 
 Setup: storm drive boreas-2021-01-26-11-22, first 60 s of the downloaded scans (speed about 6 to 10 m/s), every 5th scan (117 scans). Map from boreas-2020-11-26-13-58 built with ground-truth poses. Scans deskewed with ground-truth velocity and yaw rate. scipy point-to-plane ICP with Huber weights. Ran on the VM (Linux), not the Mac.
 

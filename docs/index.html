@@ -530,7 +530,7 @@ document.querySelectorAll(".choices button[data-g]").forEach(b=>b.addEventListen
 addEventListener("keydown",e=>{if(heroBeat!==3||e.metaKey||e.ctrlKey||e.altKey) return; const map={"1":0.5,"2":1.5,"3":3}; if(map[e.key]!==undefined) answerGuess(map[e.key]);});
 document.getElementById("guess-skip").addEventListener("click",()=>{jumpTo(heroBeatY(4));document.activeElement.blur();});
 
-// ---------- everyday sizes beside the numbers: 0.25 m about a shoe and 3 m about a parking space are Delo's; the rest are the same kind of plain comparison
+// ---------- everyday sizes beside the numbers: 0.25 m about a shoe and 3 m about a parking space are mine; the rest are the same kind of plain comparison
 const ABOUT={0.25:"a shoe",0.5:"two shoes end to end",0.75:"a doorway",1:"a doorway and a bit",1.25:"a kitchen table",1.5:"a bathtub",1.75:"a tall person",2:"a door laid flat",2.5:"most of a parking space",3:"a parking space, wide"};
 const about=m=>ABOUT[m]?`${m}\u00a0m is about ${ABOUT[m]}.`:"";
 // in-app browsers (LinkedIn, Instagram, Facebook) often block autoplay and WebGL: offer the real browser

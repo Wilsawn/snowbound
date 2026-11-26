@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Written with Claude (AI), Nov 21 2026. A bird's-eye map of the street for Delo's post.
+"""A bird's-eye map of the street for the post.
 
 Plain words:
   1. Background: the street as the car's lidar saw it. We take the map-drive scans (Nov 26 2020)

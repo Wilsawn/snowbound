@@ -1,10 +1,10 @@
 # Why did snow hurt at some spots and not others? (Nov 25, 2026)
 
-Written with Claude. Script: scripts/why_spots.py. Per-spot numbers: results/why_spots.csv. Chart: results/why_spots.png. Examples: results/why_spots_examples.jpg. Every number below is printed by the script from that CSV unless it says otherwise.
+Script: scripts/why_spots.py. Per-spot numbers: results/why_spots.csv. Chart: results/why_spots.png. Examples: results/why_spots_examples.jpg. Every number below is printed by the script from that CSV unless it says otherwise.
 
 ## The question
 
-The height-locked run (notes/results-zlock.md, results/route_pairs_zlock.csv) has 271 paired spots. At 111 the storm's room for error is smaller than on the no-snow day ("hurt"), at 142 it is the same ("same"), at 18 it is bigger ("bigger"). Delo's hypothesis: snow hurts most on wide open roads with little structure nearby (walls, poles, trees, parked cars), because snow hides curbs and lane edges and traffic spray adds clutter.
+The height-locked run (notes/results-zlock.md, results/route_pairs_zlock.csv) has 271 paired spots. At 111 the storm's room for error is smaller than on the no-snow day ("hurt"), at 142 it is the same ("same"), at 18 it is bigger ("bigger"). The hypothesis: snow hurts most on wide open roads with little structure nearby (walls, poles, trees, parked cars), because snow hides curbs and lane edges and traffic spray adds clutter.
 
 ## The measures
 

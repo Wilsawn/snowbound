@@ -41,3 +41,5 @@ results/readme_result.png
 # local ship notes and the scan version poster (not used by the live page)
 notes/push-list-*.txt
 docs/scan_poster.webp
+# a note that was only a to-do for the README
+notes/readme-additions.md

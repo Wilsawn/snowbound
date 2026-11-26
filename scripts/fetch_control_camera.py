@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""Written with Claude (AI), Nov 21 2026.
-
-Plan (and, with --go, download) the CAMERA for the control drive (Jan 19 2021, no snow falling),
+"""Plan (and, with --go, download) the CAMERA for the control drive (Jan 19 2021, no snow falling),
 for the part 2 reel. Reuses every safety rule in fetch_boreas.py: official bucket only, allowed
 file types only, size and checksum checks, dry run by default, keeps 20 GB free.
 

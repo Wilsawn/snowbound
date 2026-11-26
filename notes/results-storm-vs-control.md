@@ -1,5 +1,5 @@
 # Road or snow? The weak stretch, tested on a day without falling snow (Nov 21, 2026)
-Written with Claude (AI). Builder run, then a separate critic checked every number against the CSVs. Scripts: scripts/score_60s.py, scripts/sweep_basin.py, scripts/compare_basins.py, scripts/plot_basin_map.py. Raw CSVs: results/control-60s/, results/basin_storm.csv, results/basin_control.csv, results/basin_pairs.csv. Picture: results/basin_map.png.
+Every number was checked separately against the CSVs. Scripts: scripts/score_60s.py, scripts/sweep_basin.py, scripts/compare_basins.py, scripts/plot_basin_map.py. Raw CSVs: results/control-60s/, results/basin_storm.csv, results/basin_control.csv, results/basin_pairs.csv. Picture: results/basin_map.png.
 
 ## The question
 In the storm drive, restarting the car's position guess 1 m / 5 deg off was recovered 100% of the time in seconds 0 to 40, but only 62% in seconds 40 to 60. Is that stretch of road hard, or was it the falling snow?

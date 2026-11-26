@@ -1,7 +1,7 @@
 # Critic: are the "three most affected spots" (2, 3, 16) real snow effects? (Nov 23)
 
 Data critic pass. Scripts (rerun from ~/snowbound with `nice -n 19 uv run python <script>`), all in
-scripts/critic/ (copied from the session scratch folder; outputs in results/critic/):
+scripts/critic/ (outputs in results/critic/):
 - check_truth.py: rebuilds the chunk 0 and chunk 1 maps exactly as scripts/sweep_route.py run_chunk does
   (build_map every=1, deskew, origin = chunk's first storm pose), runs score_60s.icp_point_to_plane from the
   recorded true pose (push 0, and yaw-only +-5 deg), window 3.5 m. Output truth_icp.csv.

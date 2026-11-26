@@ -40,13 +40,7 @@ Limits: one drive per kind of weather, so this is a lead, not a law. 202 no-snow
 - [ ] One fix: a snowflake filter (DROR) on the raw scans
 - [ ] One core piece in C++
 
-## Who built what
-- Written by Delo: tests/test_loader.py
-- Written with Claude (AI): scripts/fetch_boreas.py, scripts/doctor.py, src/snowbound/loader.py
-- Written with Claude (AI): scripts/fetch_control.py, scripts/score_60s.py, scripts/sweep_basin.py
-- Written with Claude (AI), Nov 21 and 22: scripts/compare_basins.py, plot_basin_map.py, plot_street_map.py, render_chase.py, render_realstreet.py, car_mesh.py, fetch_control_camera.py, fetch_route.py, sweep_route.py, sweep_timer.sh, build_site.py
-- Written with Claude (AI), Nov 23 to 26: scripts/sweep_route_zlock.py, compare_zlock.py, spot_cam_hd.py, why_spots.py, view_scan.py, the critic checks in scripts/critic/ (check_truth.py, poses_cov.py, zlock_sweep.py), and the website in docs/
-- Used as-is: KISS-ICP, Open3D, evo, Rerun
+Built by Wilsawn Dideh.
 
 ## License
 MIT, see `LICENSE`. The Boreas data is CC BY 4.0 and belongs to the University of Toronto. Not affiliated with the University of Toronto or any car company.

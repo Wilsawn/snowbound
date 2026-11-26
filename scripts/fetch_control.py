@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""Written with Claude (AI), Nov 20 2026.
-
-Download a CONTROL drive (a day with no snow falling) for Snowbound, without editing fetch_boreas.py.
+"""Download a CONTROL drive (a day with no snow falling) for Snowbound, without editing fetch_boreas.py.
 It reuses every safety rule in fetch_boreas.py (official bucket only, allowed file types only,
 size + checksum checks, dry run by default, keeps 20 GB free).
 

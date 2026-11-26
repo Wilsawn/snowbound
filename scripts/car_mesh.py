@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Written with Claude (AI), Nov 21 2026. A simple car for the lidar renders, built from code (no downloads).
+"""A simple car for the lidar renders, built from code (no downloads).
 
 Plain words: the body is a side profile (bumper, hood, windshield, roof, tail, with wheel arches
 cut into the bottom) swept across the car's width. Above the belt line the body steps inward
