@@ -4,1134 +4,928 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Snowbound</title>
-<meta name="description" content="Snow shrinks a self-driving car's room for error. Half a second of lidar (five sweeps) from a Toronto snowstorm, and 271 spots measured on both days.">
+<meta name="description" content="Can a self-driving car handle snow? 7.4 km of a 7.9 km Toronto loop, measured spot by spot: how far off its position guess can be and still recover, in a snowstorm and a week earlier with no snow falling.">
 <meta property="og:title" content="Snowbound">
-<meta property="og:description" content="Snow shrinks a self-driving car's room for error. 271 spots on a Toronto loop, in a snowstorm and a week earlier.">
+<meta property="og:description" content="Snow shrinks a self-driving car's room for error. Here is where, spot by spot, on a Toronto loop.">
 <meta property="og:image" content="https://wilsawn.github.io/snowbound/media/og.jpg">
 <meta property="og:url" content="https://wilsawn.github.io/snowbound/">
 <meta property="og:type" content="website">
-<meta name="theme-color" content="#0a0d12">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0d12'/%3E%3Ccircle cx='16' cy='16' r='9.5' fill='none' stroke='%23d9a35a' stroke-width='1.5'/%3E%3Crect x='13' y='10' width='6' height='12' rx='1.5' fill='%23e9eef4'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"></noscript>
-<link rel="preload" as="image" href="media/hero_cam.jpg" fetchpriority="high">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%230B0D10'/><circle cx='16' cy='16' r='6' fill='none' stroke='%238EC5FF' stroke-width='2'/></svg>">
+<link rel="preload" as="image" href="media/hero_tall_poster.webp" media="(orientation: portrait)">
+<link rel="preconnect" href="https://api.fontshare.com"><link rel="preconnect" href="https://cdn.fontshare.com" crossorigin><link rel="preconnect" href="https://unpkg.com" crossorigin><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin><link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=switzer@200,300&display=swap" media="print" onload="this.media='all'">
 <style>
-  /* Fallback faces with matched metrics so the words do not jump when the web fonts land */
-  @font-face{font-family:"Familjen Fallback";src:local("Helvetica Neue"),local("Arial");size-adjust:97%;ascent-override:92%;descent-override:24%;line-gap-override:0%}
-  @font-face{font-family:"Plex Fallback";src:local("Menlo"),local("Consolas"),local("Courier New");size-adjust:94%}
-
-  /* Type: five sizes on every screen. 16 labels, ticks, legends, captions and header (measured 15 px tall on screen); 17 body; 26 beat heads; 52 the thesis and the one display number; mono 15 for the sensor stamp only. */
-  :root{
-    --bg:#0a0d12; --bg-rgb:10,13,18; --ink:#eef1f5; --ink2:#bcc4ce; --ink3:#aab2bd;
-    --snow:#b9cadb; --storm:#d9a35a; --clear:#e9eef4; --fail:#4a515b; --line:rgba(255,255,255,.14);
-    --sans:"Familjen Grotesk","Familjen Fallback",system-ui,sans-serif; --mono:"IBM Plex Mono","Plex Fallback",ui-monospace,monospace;
-    --label:16px; --body:17px; --lead:26px; --display:52px; --mono-size:15px;
-    --pad:20px; --col:100%; --hdr:60px; --scanx:540px;
-    --move:600ms; --ease:cubic-bezier(.77,0,.175,1); --appear:cubic-bezier(.32,.72,0,1);
-    --pg-bg:var(--bg); --pg-bg-rgb:var(--bg-rgb); --pg-ink:var(--ink); --pg-ink2:var(--ink2); --pg-ink3:var(--ink3); --pg-line:var(--line);
+  /* Tokens. Two colours (page and ink) plus one ice accent; the light version is Riotters' palette.
+     Type: five sizes only (t1 label 14, t2 body 18, t3 lead 28, t4 section head 48, t5 hero and stats 96+), ratio about 1.6.
+     Space: one ratio (1.5): s1 8, s2 12, s3 18, s4 27, s5 40, s6 60, s7 90; section padding --sec 12rem desktop, 6rem phone.
+     One left edge for every text block: --edge (the page column's left padding). */
+  :root{--page:#0b0d10;--ink:#dfe5e8;--soft:rgba(223,229,232,.62);--dim:rgba(223,229,232,.28);--rule:rgba(223,229,232,.16);--acc:#8ec5ff;
+    --t1:14px;--t2:18px;--t3:28px;--t4:48px;--t5:clamp(64px,9vw,136px);
+    --s1:8px;--s2:12px;--s3:18px;--s4:27px;--s5:40px;--s6:60px;--s7:90px;--sec:12rem;
+    --g:20px;--col:1240px;--hdr:44px;--cap:30ch;--edge:max(var(--g),calc((100vw - var(--col))/2 + var(--g)));--capb:15vh}
+  :root[data-theme="light"]{--page:#dfe5e8;--ink:#28363e;--soft:rgba(40,54,62,.74);--dim:rgba(40,54,62,.34);--rule:rgba(40,54,62,.24);--acc:#1b5fa6}
+  @media(max-width:699px){:root{--t3:24px;--t4:36px;--t5:clamp(44px,12vw,60px);--sec:6rem;--cap:100%;--capb:0px}h1{font-size:clamp(38px,10.5vw,52px)}}
+  @media(min-width:1700px){:root{--col:1560px;--g:40px;--t2:19px;--t3:30px;--t4:52px;--t5:clamp(64px,9vw,152px)}}
+  *{box-sizing:border-box}
+  html{background:var(--page);-webkit-font-smoothing:antialiased}
+  body{margin:0;color:var(--ink);background:var(--page);font:300 var(--t2)/1.5 "Switzer","Helvetica Neue",Helvetica,-apple-system,system-ui,sans-serif;font-variant-numeric:tabular-nums;overflow-x:hidden}
+  a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--dim)}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+  .lab{font:400 var(--t1)/1.4 ui-monospace,"SF Mono",Menlo,Consolas,monospace;letter-spacing:.01em;color:var(--soft)}
+  .sub{font-size:var(--t1);line-height:1.45;color:var(--soft);display:block}
+  p{max-width:60ch;text-wrap:pretty;margin:0 0 var(--s3)}
+  p.lead{font-size:var(--t3);line-height:1.3;font-weight:300;max-width:34ch;letter-spacing:-.01em}
+  h1,h2,h3{font-weight:300;margin:0;text-wrap:balance}
+  h1{font-size:clamp(44px,6.6vw,104px);line-height:.96;letter-spacing:-.04em;max-width:19ch}   /* the hero tier (96 and up on wide screens); the question is 17 words, so it sits a notch under the stats */
+  h2,h3{font-size:var(--t4);line-height:1.06;letter-spacing:-.025em;max-width:22ch}
+  .sw{display:inline-block;overflow:hidden;vertical-align:bottom;padding-bottom:.18em;margin-bottom:-.18em}.sw>span{display:inline-block;will-change:transform}
+  /* the one header line */
+  .hdr{position:fixed;top:0;left:0;right:0;height:var(--hdr);z-index:30;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 var(--g);border-bottom:1px solid var(--rule);background:color-mix(in srgb,var(--page) 82%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  :root[data-theme="light"] .hdr{background:color-mix(in srgb,var(--page) 92%,transparent)}
+  :root .hdr.ondark{--page:#0b0d10;--ink:#dfe5e8;--soft:rgba(223,229,232,.62);--dim:rgba(223,229,232,.28);--rule:rgba(223,229,232,.16);--acc:#8ec5ff;color:var(--ink);color-scheme:dark;background:color-mix(in srgb,#0b0d10 82%,transparent)}
+  .hdr b{font-weight:400;font-size:var(--t1);letter-spacing:-.01em}
+  .hdr .lab{white-space:nowrap;font-size:12px}
+  .hdr .mid{text-align:center}
+  .hdr .right{display:flex;justify-content:flex-end;gap:var(--s1);align-items:center}
+  .hdr .right #theme{margin-left:var(--s2)}
+  .hdr button.lab{min-height:44px;color:var(--ink)}
+  .hdr>div:first-child{white-space:nowrap;display:flex;align-items:baseline;gap:var(--s2)}
+  .hdr>div:first-child .sub{font-size:12px}
+  #openin{display:none;font-size:12px}
+  .inapp #openin{display:inline}
+  @media(max-width:700px){.hdr .mid{display:none}.hdr{grid-template-columns:auto 1fr}#weather .cond,#weather .dot{display:none}#weather::before{content:"Toronto "}.hdr>div:first-child{padding-right:var(--s2)}.inapp #weather{display:none}}
+  /* the grid: rows on one column, one section padding */
+  main{position:relative;z-index:1}
+  .wrap{max-width:var(--col);margin:0 auto;padding:0 var(--g)}
+  .row{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--rule);padding:var(--sec) 0}
+  .row>div{padding:0 var(--s5) 0 0}
+  .row>div+div{padding-left:var(--s5);padding-right:0;border-left:1px solid var(--rule)}
+  .row .lab{display:block;margin-bottom:var(--s3)}
+  .row h3{margin-bottom:var(--s4)}
+  @media(max-width:700px){.row{grid-template-columns:1fr;padding:var(--sec) 0 0}.row>div{padding:0 0 var(--s6)}.row>div+div{padding-left:0;border-left:0}ol li:first-child{border-top:0;padding-top:4px}ol li:first-child::before{top:2px}}
+  /* the pinned stages */
+  .hero{position:relative;height:660vh;--page:#0b0d10;--ink:#dfe5e8;--soft:rgba(223,229,232,.62);--dim:rgba(223,229,232,.28);--rule:rgba(223,229,232,.16);--acc:#8ec5ff;color:var(--ink);color-scheme:dark}   /* height set in px from innerHeight by the script */
+  .stage{position:sticky;top:0;height:100dvh;overflow:hidden;background:var(--page)}
+  .stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .cam{position:absolute;inset:0 0 9dvh 0;overflow:hidden;background:url(media/hero_tall_poster.webp) center/cover no-repeat;will-change:opacity}   /* the scan peeks in under the dashcam: no false floor */
+  .cam::before{content:"";position:absolute;left:0;right:0;bottom:-1px;height:22%;background:linear-gradient(to top,var(--page),transparent)}
+  @media(orientation:landscape){.cam{background-image:url(media/hero_wide_poster.webp)}}
+  .cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  @media(orientation:landscape) and (min-width:900px){.cam video,.cam{background-position:50% 100%}.cam video{object-position:50% 100%;transform:translateY(-12%) scale(1.3);transform-origin:50% 50%}}
+  .cam::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(11,13,16,.96) 0,rgba(11,13,16,.88) 28%,rgba(11,13,16,.64) 50%,rgba(11,13,16,.32) 68%,transparent 84%)}   /* the floor fade reaches the question's top line: 4.5:1 over the brightest sky */
+  .stage::before{content:"";position:absolute;left:0;right:0;top:0;height:24vh;background:linear-gradient(to bottom,var(--page),transparent);pointer-events:none;z-index:2;opacity:0;transition:opacity .4s}
+  .stage.scan::before{opacity:1}
+  .stage::after{content:"";position:absolute;left:0;right:0;bottom:0;height:56vh;background:linear-gradient(to top,color-mix(in srgb,var(--page) 78%,transparent) 0%,color-mix(in srgb,var(--page) 55%,transparent) 40%,transparent 100%);pointer-events:none;z-index:2}
+  /* ONE caption spot: left column, lower third, one card style; on phones the card docks to the bottom over the fade */
+  .beat{position:absolute;inset:0;z-index:3;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s cubic-bezier(.55,0,1,.45),visibility 0s linear .12s}
+  .beat.on{opacity:1;visibility:visible;transition:opacity .25s cubic-bezier(.32,.72,0,1) .12s,visibility 0s linear .12s}   /* the old caption is out before the new one starts */
+  .beat.back{transition:none}   /* entering a beat backward: both captions swap in the same frame as the scene */
+  .card{position:absolute;left:var(--edge);bottom:var(--capb);width:var(--cap);max-width:calc(100vw - 2*var(--edge));padding:var(--s4);background:color-mix(in srgb,var(--page) 84%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);pointer-events:auto}
+  .card .lab{display:block;margin-bottom:var(--s2)}
+  .card p{font-size:var(--t3);line-height:1.22;letter-spacing:-.015em;margin:0;max-width:none}
+  .card p b{font-weight:300;color:var(--acc)}
+  .card p b.huge{display:block;font-size:var(--t4);line-height:1;margin-top:var(--s2);letter-spacing:-.03em}
+  .card .why{font-size:var(--t2);line-height:1.45;color:var(--soft);margin:var(--s3) 0 0;max-width:none;text-wrap:pretty}
+  .card .why a{color:var(--ink)}
+  .card .links{display:flex;gap:var(--s3);margin-top:var(--s3)}
+  .card .links a{font-size:var(--t1);text-decoration-color:var(--dim)}
+  .card.q{width:auto;max-width:calc(100vw - 2*var(--edge));background:none;border:0;padding:0;backdrop-filter:none;-webkit-backdrop-filter:none;bottom:calc(var(--capb) + 2vh)}
+  .card.q h1{margin-bottom:var(--s4)}
+  .card.q .lab{width:max-content;background:color-mix(in srgb,var(--page) 72%,transparent);padding:3px 6px;margin-left:-6px;border-radius:3px;color:var(--ink)}
+  .card.q p.answer{font-size:var(--t3);max-width:40ch}
+  .card.q p.answer b{font-weight:300;color:var(--acc)}
+  h1 .w{opacity:.42;transition:opacity .35s}
+  h1 .w.lit{opacity:1}
+  .snowline{opacity:0;transition:opacity .5s .4s}
+  .beat.on .snowline{opacity:1}
+  .beat.on.back .snowline{transition-delay:0s}
+  @media(max-width:699px){
+    .card{left:0;right:0;width:auto;max-width:none;border:0;background:none;backdrop-filter:none;-webkit-backdrop-filter:none;padding:0 40px var(--s5) var(--g)}   /* 40 on the right keeps the text clear of the beat rail */
+    .card .lab{position:absolute;left:var(--g);top:auto;bottom:100%;margin:0 0 var(--s2)}   /* the label sits just above the card text */
+    .card.q{bottom:var(--s5);padding:0 40px var(--s5) var(--g)}
+    .card.q h1{margin-bottom:var(--s3)}
+    .card.q p.answer{font-size:var(--t2)}
+    .scanlab,.legend3d{font-size:12px}
+    .card .lab{right:var(--g)}
   }
-  @media (min-width:1000px){ :root{ --pad:56px; --col:460px; } }
-  @media (prefers-color-scheme:light){
-    :root{ --pg-bg:#f2f0eb; --pg-bg-rgb:242,240,235; --pg-ink:#151a21; --pg-ink2:#3f4752; --pg-ink3:#5d6672; --pg-line:rgba(0,0,0,.14); }
-  }
-  @media (prefers-reduced-motion:reduce){ :root{ --move:0ms } }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html{background:var(--bg);scroll-behavior:auto}
-  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-variant-numeric:tabular-nums;overflow-x:hidden}
-  a{color:inherit}
-  b,strong{font-weight:500;color:var(--ink)}
-  .lead{font-size:var(--lead);line-height:1.22;font-weight:500;letter-spacing:-.005em;text-wrap:balance;color:var(--ink)}
-  .body{font-size:var(--body);line-height:1.5;color:var(--ink2);margin-top:14px;text-wrap:pretty}
-  .label{font-size:var(--label);line-height:1.45;color:var(--ink3);margin-top:14px}
-  .label b{color:var(--ink2)}
-  .display{font-size:var(--display);line-height:1.04;font-weight:500;letter-spacing:-.022em;text-wrap:balance;color:var(--ink)}
-
-  /* header: wordmark, place and date (follows the scan shown), the open-in-browser link when inside an app. Solid page colour so it never sits over body copy. */
-  header{position:fixed;left:0;right:0;top:0;height:var(--hdr);z-index:20;padding:0 var(--pad);display:flex;justify-content:space-between;align-items:center;font-size:var(--label);color:var(--ink2);pointer-events:none;background:var(--bg);transition:color .2s,background .2s}
-  header b{color:var(--ink);font-weight:500}
-  header span{display:flex;gap:18px;align-items:center}
-  header .where{display:none}
-  @media (min-width:600px){ header .where{display:inline} }
-  header a{pointer-events:auto;text-decoration:none;color:var(--ink);padding:10px 14px;margin-right:-14px;border:1px solid var(--line);border-radius:8px;display:none;min-height:44px;align-items:center}
-  body.inapp header a{display:inline-flex}
-  body.on-light header{color:var(--pg-ink2);background:var(--pg-bg)}
-  body.on-light header b{color:var(--pg-ink)}
-  body.poster header,body.poster .beats,body.poster #pins,body.poster #fade,body.poster #cover,body.poster .flow{display:none}
-
-  /* the pinned half: one stage that sticks while six beats scroll over it */
-  .pinned{position:relative;isolation:isolate}
-  .stage{position:sticky;top:0;height:100dvh;min-height:560px;overflow:hidden;z-index:0;background:var(--bg)}
-  #scan{position:absolute;inset:0;width:100%;height:100%;display:block}
-  #poster{position:absolute;left:50%;top:45%;width:375vw;height:375vw;display:none;opacity:.92;transform:translate(-50%,-50%)}
-  @media (min-width:1000px){ #poster{left:0;top:0;width:100%;height:100%;object-fit:cover;transform:translateX(20%)} }
-  .stage.nogl #scan{display:none}
-  .stage.nogl #poster{display:block}
-  .stage.nogl #pin-snow,.stage.nogl #pin-road,.stage.nogl #pin-r1,.stage.nogl #pin-r2{display:none}
-  #pushfb{position:absolute;inset:0;width:100%;height:100%;display:none;pointer-events:none;z-index:1}
-  .stage.nogl.push #pushfb{display:block}
-  #fade{position:absolute;inset:0;pointer-events:none;z-index:2;transition:opacity .3s;
-    background:linear-gradient(to top, rgba(var(--bg-rgb),.97) 0, rgba(var(--bg-rgb),.93) 34%, rgba(var(--bg-rgb),0) 62%)}
-  @media (min-width:1000px){
-    #fade{background:linear-gradient(to right, rgba(var(--bg-rgb),.97) 0, rgba(var(--bg-rgb),.93) 440px, rgba(var(--bg-rgb),0) 820px)}
-  }
-  .stage.dim #fade{opacity:.6}
-  #cover{position:absolute;inset:0;pointer-events:none;z-index:2;background:rgba(var(--bg-rgb),.8);opacity:0;transition:opacity .3s}
-  .stage.result #cover{opacity:.72}
-
-  /* the height legend: in the text column, just above the words, on every scan beat and on the clip. One left edge on every size. */
-  .lg{display:flex;gap:8px;align-items:center;font-size:var(--label);color:var(--ink2);margin-bottom:14px;line-height:1}
-  .lg i{display:block;width:56px;height:6px;border-radius:3px;background:linear-gradient(to right, #5c6775 0, #e9eef4 100%)}
-  @media (min-width:1000px){ .lg{margin-bottom:18px} }
-
-  /* pinned labels sit on the thing they name */
-  #pins{position:absolute;inset:0;z-index:3;pointer-events:none}
-  .pin{position:absolute;font-size:var(--label);line-height:1.3;color:var(--ink);white-space:nowrap;opacity:0;transition:opacity .3s var(--appear);transform:translate(0,-50%);padding:3px 7px;border-radius:4px;background:rgba(var(--bg-rgb),.84)}
-  .pin::before{content:"";position:absolute;left:-14px;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:var(--ink)}
-  .pin.r{transform:translate(-100%,-50%)}
-  .pin.r::before{left:auto;right:-14px}
-  .pin.up{transform:translate(-50%,-100%)}
-  .pin.up::before{left:50%;margin-left:-3px;top:auto;margin-top:0;bottom:-14px}
-  .pin.dn{transform:translate(-50%,0);background:var(--bg)}
-  .pin.dn::before{left:50%;margin-left:-3px;top:-14px;margin-top:0}
-  .pin.snow::before{background:var(--snow)}
-  .pin.storm::before{background:var(--storm)}
-  .pin.on{opacity:1}
-  .pin small{display:block;font-size:var(--label);color:var(--ink2)}
-
-  /* six beats; each is 150 to 300vh tall, and each has a sticky layer the height of the screen */
-  .beats{position:relative;z-index:4;margin-top:-100dvh}
-  .beat{position:relative;height:200vh}
-  .beat.tall{height:300vh}
-  .sub{height:150vh;position:relative}
-  .layer{position:sticky;top:0;height:100dvh;min-height:560px;pointer-events:none}
-  .layer > *{pointer-events:auto}
-  .text{position:absolute;left:var(--pad);right:var(--pad);bottom:28px;max-width:var(--col)}
-  @media (min-width:1000px){ .text{right:auto;bottom:auto;top:50%;transform:translateY(-50%);width:var(--col)} }
-
-  /* beat 1: the dashcam frame tied to the scan */
-  #cam{position:absolute;z-index:1;left:var(--pad);top:calc(var(--hdr) + 4px);width:min(236px, 56vw);aspect-ratio:1600/1006;overflow:hidden;border-radius:6px;box-shadow:0 0 0 1px rgba(255,255,255,.14)}
-  #cam img{display:block;width:100%;height:100%;object-fit:cover}
-  #tie{position:absolute;width:1px;background:rgba(255,255,255,.4);z-index:1}
-  #tie::after{content:"";position:absolute;left:-2.5px;bottom:-3px;width:6px;height:6px;border-radius:50%;background:var(--ink)}
-  @media (min-width:1000px){ #cam{left:auto;width:min(38vw, 600px);top:calc(var(--hdr) + 8px)} }
-  .stage.nogl ~ .beats #tie{display:none}
-  .who{margin-top:14px;font-size:var(--label);color:var(--ink2)}
-  .who b{color:var(--ink)}
-  .sensor{margin-top:10px;font-family:var(--mono);font-size:var(--mono-size);color:var(--ink3);line-height:1.45}
-  .sensor .when{display:block;white-space:nowrap}
-  @media (max-width:999px){ .sensor .when{letter-spacing:-.03em} }
-
-  /* beat 4: the ten push marks, a quiet row in the text column */
-  .marks{display:flex;gap:6px;margin-top:16px;align-items:flex-end}
-  .marks div{flex:1 1 0;text-align:center;font-size:var(--label);color:var(--ink3);line-height:1.2}
-  .marks i{display:block;width:8px;height:8px;border-radius:50%;margin:0 auto 8px;border:1.5px solid var(--storm);background:var(--storm)}
-  .marks div.lost i{background:transparent}
-  .marks div.at b{color:var(--ink)}
-
-  /* beat 5: try it. One edge-to-edge figure split by a hairline (no boxes), the label on one line under each panel, the spot and size toggles as plain underlined text in the text column. */
-  #try{position:absolute;left:0;right:0;top:calc(var(--hdr) + 8px);display:flex;flex-direction:column}
-  .tryhead{padding:0 var(--pad)}
-  .tryhead .body{margin-top:8px}
-  .two{display:grid;grid-template-columns:1fr;margin-top:10px}
-  .scanbox{position:relative;width:100%;height:min(22dvh, 180px);overflow:hidden;background:var(--bg)}
-  .scanbox canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-  .scanbox svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-  .two .cap{font-size:var(--label);color:var(--ink2);line-height:1.4;padding:8px var(--pad) 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .two .cap b{color:var(--ink);font-weight:400}
-  #cap-storm{order:2} #box-clear{order:3;border-top:1px solid var(--line)} #cap-clear{order:4}
-  .ctl{padding:0;font-size:var(--label);color:var(--ink3)}
-  .ctl .row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-  .ctl .row > span{flex:0 0 44px}
-  .ctl .seg{display:flex;flex:1 1 auto;gap:2px}
-  .ctl .sizes{flex-basis:100%;justify-content:space-between;gap:0;margin-top:-10px}
-  .ctl button{border:0;background:none;padding:0 1px;min-height:44px;min-width:22px;color:var(--ink3);font:inherit;font-size:var(--label);cursor:pointer;text-decoration:underline;text-underline-offset:5px;text-decoration-color:var(--line);text-decoration-thickness:1px;transition:color .15s ease,text-decoration-color .15s ease}
-  .ctl button[aria-pressed="true"]{color:var(--ink);text-decoration-color:var(--storm);text-decoration-thickness:2px}
-  @media (min-width:1000px){
-    #try{left:var(--scanx);right:var(--pad);top:50%;transform:translateY(-50%)}
-    .tryhead{position:absolute;left:calc(var(--pad) - var(--scanx));top:50%;transform:translateY(-50%);width:var(--col);padding:0}
-    .two{grid-template-columns:1fr 1fr;margin-top:0}
-    .scanbox{height:clamp(420px, 66dvh, 760px)}
-    #box-clear{order:2;border-top:0;border-left:1px solid var(--line)} #cap-storm{order:3}
-    .two .cap{padding:12px 0 0 0}
-    #cap-clear{padding-left:17px}
-    .ctl{padding:0;margin-top:18px}
-    .ctl .row{gap:12px;flex-wrap:nowrap} .ctl .row > span{flex-basis:52px}
-    .ctl .seg{gap:6px} .ctl .sizes{flex-basis:auto;gap:0;margin-top:0}
-    .ctl button{padding:0 6px}
-  }
-
-  /* beat 6: the result. One display number; the two typical values sit on the strips. */
-  #b6 .layer{pointer-events:none}
-  #result{position:absolute;left:var(--pad);right:var(--pad);top:calc(var(--hdr) + 8px);bottom:20px;display:flex;flex-direction:column;justify-content:flex-start}
-  #result .num{margin-top:18px;font-size:var(--display);line-height:1;font-weight:500;letter-spacing:-.022em;color:var(--ink)}
-  #result .num small{display:block;font-size:var(--label);font-weight:400;letter-spacing:0;color:var(--ink2);margin-top:8px}
-  #result .body{margin-top:12px}
-  #chart{margin-top:16px}
-  #chart .row{display:flex;justify-content:space-between;font-size:var(--label);color:var(--ink2);line-height:1.4;margin-bottom:6px}
-  #chart .row b{color:var(--ink)}
-  #chart .row .s{color:var(--storm)}
-  #chart .strip{position:relative;height:56px;border-bottom:1px solid var(--line)}
-  #chart .strip.s{border-bottom:0;border-top:1px solid var(--line)}
-  #chart canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-  #chart .axis{display:flex;justify-content:space-between;font-size:var(--label);color:var(--ink3);line-height:1.4;padding:4px 0}
-  #chart .typ{position:absolute;left:0;right:0;border-top:1px dashed rgba(255,255,255,.35);font-size:var(--label);color:var(--ink2);line-height:1}
-  #chart .typ span{position:absolute;right:0;top:3px;padding:1px 4px 2px 6px;background:rgba(var(--bg-rgb),.85);border-radius:3px}
-  #chart .cap{margin-top:12px;font-size:var(--label);color:var(--ink2);line-height:1.45;max-width:760px}
-  #chart .cap b{color:var(--ink)}
-  #chart .cap .s{color:var(--storm)}
-  #chart .typ.s{border-top-color:rgba(217,163,90,.7)}
-  #chart .typ.s span{color:var(--storm)}
-  .after{margin-top:12px;font-size:var(--label);color:var(--ink3);line-height:1.45}
-  @media (max-width:999px){                                              /* phone: the two typical values sit outside the strips with no backing: 3 m+ just above the top strip, 2.5 m just under the storm strip (its offset set in drawBars) */
-    #chart{margin-top:30px}
-    #chart .typ span{background:none;padding:0;top:auto;bottom:4px}
-    #chart .typ.s span{bottom:auto}
-    #chart .cap{margin-top:34px}
-  }
-  @media (min-width:1000px){
-    #result{left:var(--pad);right:var(--pad);top:0;bottom:0;display:block}
-    #result .lede{position:absolute;left:0;top:50%;transform:translateY(-50%);width:var(--col)}
-    #chart{position:absolute;left:var(--scanx);right:0;top:50%;transform:translateY(calc(-50% + 36px));margin:0;padding-right:128px}
-    #chart .strip{height:27vh}
-    #chart .typ span{left:100%;right:auto;margin-left:10px;top:-10px;padding:0;background:none;white-space:nowrap}
-    #chart .cap{margin-top:14px}
-  }
-
-  /* normal flow below the scan */
-  .flow{position:relative;z-index:5;background:var(--bg)}
-  /* beat 7: the loop */
-  #b7{position:relative;height:100dvh;min-height:640px;overflow:hidden}
-  #loopbg{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:.22}
-  #loop{position:absolute;inset:0;width:100%;height:100%;display:block}
-  #loop .lbl{font-size:var(--label);fill:var(--ink);font-family:var(--sans)}
-  #loop .lbl2{font-size:var(--label);fill:var(--ink2);font-family:var(--sans)}
-  #b7 .fade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top, rgba(var(--bg-rgb),.97) 0, rgba(var(--bg-rgb),.9) 24%, rgba(var(--bg-rgb),0) 40%)}
-  @media (min-width:1000px){ #b7 .fade{background:linear-gradient(to right, rgba(var(--bg-rgb),.97) 0, rgba(var(--bg-rgb),.93) 440px, rgba(var(--bg-rgb),0) 820px)} }
-  .key{display:flex;gap:16px;margin-top:12px;font-size:var(--label);color:var(--ink2);flex-wrap:wrap}
-  .key i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
-
-  /* beat 8: twelve seconds at spot 002_011, both days. One figure: the clip's lidar half (the clip is 720 x 1280; never above 1 CSS px per clip pixel; its burned-in title stays cropped above the 538 px shown) with the camera half as an inset in its top right corner, square corners, b1's hairline. Desktop: 1 px per clip pixel, centred in the right column on the page colour, the opening scan behind it dimmed to near black. Phone: 360 px or the text width, at the text's left edge. */
-  #b8{position:relative;background:var(--bg);overflow:hidden;padding-top:calc(var(--hdr) + 8px)}   /* phone: the figure clears the fixed header when the beat is scrolled to its top */
-  #clipbg{position:absolute;inset:0;width:100%;height:100%;display:none;opacity:.14}
-  #clipfig{position:relative;z-index:2;width:min(360px, calc(100% - 2 * var(--pad)));margin:0 0 0 var(--pad);aspect-ratio:720/538;overflow:hidden;background:#000;box-shadow:0 0 0 1px rgba(255,255,255,.14)}
-  #clipfig video{position:absolute;left:0;bottom:0;width:100%;height:auto;display:block;cursor:pointer;background:#000}
-  #cam2{position:absolute;z-index:1;right:0;top:0;width:45%;aspect-ratio:720/640;overflow:hidden;background:#000;box-shadow:0 0 0 1px rgba(255,255,255,.14);cursor:pointer}
-  #cam2 canvas{display:block;width:100%;height:100%}
-  #b8 .fade{display:none}
-  #b8 .caption{padding:20px var(--pad) 28px;font-size:var(--label);color:var(--ink2);line-height:1.45;max-width:var(--col)}
-  #b8 .caption b{color:var(--ink)}
-  #b8 .caption .sensor{display:none}
-  @media (min-width:1000px){
-    #b8{height:100dvh;min-height:640px;padding-top:0}
-    #clipbg{display:block}
-    #b8 .fade{display:block;position:absolute;z-index:1;inset:0;pointer-events:none;background:linear-gradient(to right, rgba(var(--bg-rgb),.97) 0, rgba(var(--bg-rgb),.93) 440px, rgba(var(--bg-rgb),0) 820px)}
-    #clipfig{position:absolute;width:min(720px, calc(100% - var(--scanx) - var(--pad)));left:calc(var(--scanx) + (100% - var(--scanx) - var(--pad) - min(720px, 100% - var(--scanx) - var(--pad))) / 2);top:50%;transform:translateY(-50%);margin:0}
-    #cam2{width:37.5%}
-    #b8 .caption{position:absolute;z-index:3;left:var(--pad);top:50%;transform:translateY(-50%);padding:0;width:var(--col);font-size:var(--body)}
-    #b8 .caption .sensor{display:block}
-  }
-
-  /* beats 9 and 10: one column of words at the shared left edge; these two follow the system theme */
-  .page{background:var(--pg-bg);color:var(--pg-ink);padding:96px var(--pad) 0}
-  .page .inner{max-width:680px}
-  #b10{padding-bottom:0;position:relative;overflow:hidden}
-  #b10 .inner{position:relative;z-index:1}
-  #endfig{position:relative;height:38dvh;min-height:240px;margin:48px calc(-1 * var(--pad)) 0;background:var(--bg);overflow:hidden}
-  #endfig canvas,#endfig img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
-  #endfig img{display:none;opacity:.5}
-  body.nogl #endfig img{display:block}
-  body.nogl #endfig canvas{display:none}
-  #endfig::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom, rgba(var(--pg-bg-rgb),1) 0, rgba(var(--pg-bg-rgb),0) 120px)}
-  .page .lead{color:var(--pg-ink);margin-top:0}
-  .page .body{color:var(--pg-ink2)}
-  .page .body b{color:var(--pg-ink)}
-  .page .label{color:var(--pg-ink3)}
-  .page .label b{color:var(--pg-ink2)}
-  .page a{color:var(--pg-ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--pg-line)}
-  .page .block + .block{margin-top:48px}
-  .links{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px}
-  .links a{padding:10px 0;min-height:44px;display:inline-flex;align-items:center}
-  .credits{margin-top:48px;font-size:var(--label);line-height:1.5;color:var(--pg-ink3);max-width:680px}
-  .credits a{color:var(--pg-ink2)}
-  .fig{margin-top:40px}
-  .fig svg{display:block;width:100%;height:auto}
-  .fig .t{font-size:var(--label);fill:var(--pg-ink3);font-family:var(--sans)}
-  .fig .ti{font-size:var(--label);fill:var(--pg-ink2);font-family:var(--sans)}
-  .fig .bc{fill:var(--pg-ink2);opacity:.55}
-  .fig .bs{fill:var(--storm)}
-  .fig .ax{stroke:var(--pg-line)}
-  @media (min-width:1000px){
-    .page{padding:112px var(--pad) 0}
-    #b9 .inner{max-width:none;display:grid;grid-template-columns:680px minmax(0,1fr);column-gap:96px;align-items:start}
-    #b9 .prose{grid-column:1}
-    #b9 .fig{grid-column:2;margin-top:4px;position:sticky;top:calc(var(--hdr) + 36px)}
-    #b9{min-height:100dvh;padding-bottom:96px}
-    #b10{min-height:100dvh;padding-bottom:96px}
-    #endfig{position:absolute;left:max(50%, 784px);right:0;top:0;bottom:0;height:auto;min-height:0;margin:0}
-    #endfig::after{background:linear-gradient(to right, rgba(var(--pg-bg-rgb),1) 0, rgba(var(--pg-bg-rgb),0) 200px), linear-gradient(to bottom, rgba(var(--pg-bg-rgb),1) 0, rgba(var(--pg-bg-rgb),0) 240px)}
-  }
-  @media (min-width:1000px) and (prefers-color-scheme:light){
-    #endfig{top:112px;box-shadow:-1px 0 0 var(--pg-line)}
-    #endfig::after{background:none}
-  }
-
-  @media (prefers-reduced-motion:reduce){ .pin, .ctl button, #fade, #cover{transition:none} }
+  .beat.guess .card{pointer-events:auto}
+  .choices{display:flex;gap:var(--s2);margin-top:var(--s3);flex-wrap:wrap;align-items:center}
+  .choices button{min-height:48px;padding:0 var(--s3);border:1px solid var(--rule);border-radius:24px;font-weight:300;font-size:var(--t2);color:var(--ink);background:color-mix(in srgb,var(--page) 55%,transparent);transition:border-color .2s,background .2s,transform .15s}
+  .choices button:active{transform:scale(.96)}
+  .choices button:hover{border-color:var(--ink)}
+  .choices button:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+  .choices button[aria-pressed="true"]{border-color:var(--ink);color:var(--ink)}
+  .choices button.skip{border:0;background:none;color:var(--soft);font-size:var(--t1);padding:0 6px;min-height:44px}
+  .card p.verdict{font-size:var(--t2);line-height:1.45;letter-spacing:0;color:var(--ink);margin:var(--s3) 0 0;min-height:1.5em}
+  .verdict b{font-weight:300;color:var(--acc)}
+  .snowtoggle{position:absolute;right:var(--edge);bottom:var(--capb);z-index:5;pointer-events:auto;min-height:44px;padding:0 var(--s3);border:1px solid var(--rule);border-radius:22px;font-size:var(--t1);color:var(--ink);background:color-mix(in srgb,var(--page) 60%,transparent);opacity:0;transition:opacity .3s;visibility:hidden}
+  .snowtoggle.on{opacity:1;visibility:visible}
+  .snowtoggle[aria-pressed="true"]{border-color:var(--ink)}
+  .snowcap{position:absolute;right:var(--edge);bottom:calc(var(--capb) + 56px);z-index:5;font-size:var(--t1);line-height:1.4;text-align:right;color:var(--soft);max-width:34ch;opacity:0;transition:opacity .3s}
+  .snowcap.on{opacity:1}
+  @media(max-width:699px){.snowtoggle{bottom:auto;top:calc(var(--hdr) + var(--s2));right:var(--g);font-size:12px;min-height:36px;padding:0 var(--s2)}.snowcap{bottom:auto;top:calc(var(--hdr) + 60px + var(--s2));left:var(--g);right:auto;text-align:left;font-size:12px;max-width:60%}}
+  #flakes{position:absolute;inset:0;pointer-events:none;z-index:1}
+  /* small monospace labels on the visual: the sensor line top-left, the ring size at the ring's edge */
+  .scanlab{position:absolute;left:var(--edge);top:calc(var(--hdr) + var(--s3));z-index:4;opacity:0;transition:opacity .4s;pointer-events:none;white-space:nowrap}
+  .scanlab.on{opacity:1}
+  .scanlab span{display:block}
+  @media(max-width:699px){.scanlab{left:var(--g);top:calc(var(--hdr) + var(--s2))}}
+  .ringlab{position:absolute;z-index:4;opacity:0;transition:opacity .3s;pointer-events:none;transform:translate(10px,-50%);background:color-mix(in srgb,var(--page) 70%,transparent);padding:2px 6px;color:var(--ink)}
+  .ringlab.on{opacity:1}
+  .legend3d{position:absolute;right:var(--edge);top:calc(var(--hdr) + var(--s3));z-index:4;opacity:0;transition:opacity .4s;pointer-events:none;display:flex;align-items:center;gap:var(--s1)}
+  .legend3d.on{opacity:1}
+  .legend3d i{width:72px;height:4px;border-radius:2px;background:linear-gradient(to right,rgba(223,229,232,.3),#dfe5e8)}
+  .legend3d b{font-weight:400;color:var(--acc)}
+  @media(max-width:699px){.legend3d{right:auto;left:var(--g);top:calc(var(--hdr) + var(--s2) + 54px)}.stage.snowoff .legend3d{display:none}}
+  /* the beat rail: one dot per beat, click to jump */
+  .rail{position:absolute;right:calc(var(--g) - 16px);top:50%;transform:translateY(-50%);z-index:6;display:flex;flex-direction:column;margin:0;padding:0;list-style:none}
+  .rail button{width:44px;height:34px;display:grid;place-items:center;position:relative;color:var(--ink)}
+  .rail button::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--dim);transition:background .2s,transform .2s}
+  .rail button[aria-current="true"]::before{background:var(--ink);transform:scale(1.5)}
+  .rail button:hover::before,.rail button:focus-visible::before{background:var(--ink)}
+  .rail button:focus-visible{outline:none}
+  .rail button span{position:absolute;right:40px;top:50%;transform:translateY(-50%);font-size:var(--t1);line-height:1;color:var(--ink);white-space:nowrap;opacity:0;transition:opacity .15s;background:color-mix(in srgb,var(--page) 84%,transparent);padding:5px 8px;border-radius:3px;pointer-events:none}
+  .rail button:hover span,.rail button:focus-visible span{opacity:1}
+  @media(max-width:699px){.rail{right:calc(var(--g) - 19px)}.rail button span{display:none}}
+  /* the thesis frame: one screen, the three numbers are the picture; same size, one baseline, unit smaller, one label under each */
+  .thesis{padding:calc(var(--hdr) + var(--s6)) 0 var(--sec);min-height:100dvh;display:flex;flex-direction:column;justify-content:center}
+  .thesis .lab{display:block;margin-bottom:var(--s3)}
+  .stats{display:flex;gap:var(--s4) var(--s6);flex-wrap:wrap;margin:var(--s6) 0 var(--s6);align-items:baseline}
+  .stats .n{font-weight:200;font-variant-numeric:proportional-nums;font-size:var(--t5);line-height:.9;letter-spacing:-.05em;white-space:nowrap}
+  .stats .n small{font-size:var(--t4);letter-spacing:-.02em;margin-left:.08em}
+  .stats .n.acc{color:var(--acc)}
+  .stats .lab{display:block;margin:var(--s2) 0 0;max-width:20ch}
+  .thesis .copy{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}   /* the same two edges as every row */
+  .thesis .copy>div:first-child{padding-right:var(--s5)}
+  .thesis .copy>div+div{padding-left:var(--s5)}
+  .thesis .copy p{margin:0 0 var(--s2)}
+  @media(max-width:700px){.thesis{min-height:0;padding:var(--sec) 0}.stats{flex-direction:column;align-items:stretch;gap:0;margin:var(--s5) 0;border-top:1px solid var(--rule)}.stats>div{padding:var(--s3) 0 var(--s2);border-bottom:1px solid var(--rule)}.stats .lab{margin-top:var(--s1);max-width:none}.thesis .copy{grid-template-columns:1fr;gap:var(--s2)}}
+  /* try it yourself */
+  .try p{max-width:48ch}
+  @media(min-width:700px){.try{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)}.try .panel .lid{aspect-ratio:1/1}.panels{gap:var(--s2);position:sticky;top:72px}}
+  .try .spots{display:flex;gap:var(--s3);margin:var(--s4) 0 var(--s3)}
+  .try .spots button{min-height:44px;color:var(--soft);font-weight:300;font-size:var(--t3);letter-spacing:-.02em;transition:color .3s}
+  .try .spots button[aria-pressed="true"]{color:var(--ink)}
+  .pushrow{display:flex;align-items:center;gap:var(--s3);margin-top:var(--s1)}
+  .pushrow b{font-weight:200;font-variant-numeric:proportional-nums;font-size:var(--t4);line-height:1;letter-spacing:-.03em;min-width:4.2ch}
+  #pushsay{min-height:1.5em}
+  input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:44px;background:none;margin:0}
+  input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--rule)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--ink);margin-top:-12px;border:0}
+  input[type=range]::-moz-range-track{height:2px;background:var(--rule)}
+  input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--ink);border:0}
+  .panels{display:grid;grid-template-columns:1fr 1fr;gap:var(--s1)}
+  .panel{margin:0}
+  .panel .lid{position:relative;aspect-ratio:1/1;background:#000;overflow:hidden}
+  .panel img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(2);transform-origin:50% 50%}
+  .panel svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .panel figcaption{display:grid;gap:4px;justify-content:start;margin-top:var(--s2);font-size:var(--t1);color:var(--soft)}
+  .panel figcaption b{font-weight:300;font-size:var(--t2);color:var(--ink)}
+  .panel.fail figcaption b{color:#ff6b6b}.panel.pass figcaption b{color:#5fd39a}
+  :root[data-theme="light"] .panel figcaption b{color:var(--ink)}
+  :root[data-theme="light"] .panel figcaption b::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:1px}
+  :root[data-theme="light"] .panel.fail figcaption b::before{background:#e0484c}:root[data-theme="light"] .panel.pass figcaption b::before{background:#2f9e68}
+  /* the drive: a pinned map, three stops, then the whole loop; dark in both themes */
+  .drive{position:relative;height:500vh;--page:#0b0d10;--ink:#dfe5e8;--soft:rgba(223,229,232,.62);--dim:rgba(223,229,232,.28);--rule:rgba(223,229,232,.16);--acc:#8ec5ff;color:var(--ink);color-scheme:dark}
+  #map{position:absolute;inset:0;background:var(--page);z-index:0}
+  .maplibregl-ctrl-attrib{background:color-mix(in srgb,var(--page) 85%,transparent)!important;color:var(--soft)!important;font:400 10px/1.4 "Switzer",system-ui,sans-serif!important}
+  .maplibregl-ctrl-attrib a{color:var(--ink)!important}
+  .drive:not(.free) #map{pointer-events:none}
+  .car-dot{width:14px;height:14px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 2px var(--ink),0 0 18px 2px color-mix(in srgb,var(--acc) 60%,transparent)}
+  /* the stop card: the same caption card, in the same spot */
+  .callout{z-index:5;opacity:0;visibility:hidden;transition:opacity .15s ease-in,visibility 0s linear .15s;pointer-events:none}
+  .callout.on{opacity:1;visibility:visible;transition:opacity .3s cubic-bezier(.32,.72,0,1),visibility 0s;pointer-events:auto}
+  .callout .head{display:flex;gap:var(--s3);align-items:flex-start}
+  .callout img{width:96px;aspect-ratio:480/347;object-fit:cover;display:block;background:#000;flex:none}
+  .callout .sub{color:var(--ink);font-size:var(--t2);line-height:1.35}
+  #c-lab{text-wrap:pretty}
+  .callout .nums{display:flex;gap:var(--s4);margin-top:var(--s3);align-items:baseline}
+  .callout .nums b{font-weight:300;font-size:var(--t4);line-height:1;letter-spacing:-.03em;display:block;white-space:nowrap}
+  .callout .nums b.acc{color:var(--acc)}
+  .callout .nums .sub{color:var(--soft);font-size:var(--t1);margin-top:4px}
+  .callout .nums>div+div b{font-size:var(--t3);color:var(--soft)}
+  .callout .cstep{display:none;gap:var(--s1);margin-top:var(--s3);align-items:center;flex-wrap:wrap}
+  .drive.free .callout .cstep{display:flex}
+  .callout .cstep a{margin-left:6px;text-decoration-color:var(--dim)}
+  #c-close{margin-left:auto;min-width:44px;padding:0;font-size:22px}
+  .cstep button,.spot .step button{min-width:44px;min-height:44px;padding:0 var(--s2);border:1px solid var(--rule);border-radius:22px;color:var(--ink);font-size:var(--t1)}
+  .cstep button:hover,.cstep button:focus-visible,.spot .step button:hover,.spot .step button:focus-visible{border-color:var(--ink);outline:none}
+  @media(max-width:699px){.drive.sheet .mapui,.drive.sheet .mapcredit{opacity:0;pointer-events:none}.callout{padding-bottom:var(--s4)}.drive.free .callout{background:color-mix(in srgb,var(--page) 90%,transparent);padding-top:var(--s3);border-top:1px solid var(--rule)}#c-close{position:absolute;top:var(--s1);right:var(--s1)}}
+  .mapui{position:absolute;left:var(--edge);right:var(--edge);bottom:var(--s4);z-index:5;display:flex;align-items:flex-end;justify-content:space-between;gap:var(--s3);opacity:0;transition:opacity .4s;pointer-events:none;flex-wrap:wrap}
+  .mapui.on{opacity:1;pointer-events:auto}
+  .toggle{display:flex;gap:var(--s3)}
+  .toggle button{min-height:44px;color:var(--soft);font-weight:300;font-size:var(--t3);letter-spacing:-.02em;white-space:nowrap;transition:color .3s}
+  .toggle button[aria-pressed="true"]{color:var(--ink)}
+  .legend{display:flex;align-items:center;gap:var(--s1);white-space:nowrap;padding-bottom:4px}
+  .legend i{width:120px;height:4px;border-radius:2px;background:linear-gradient(to right,#e0484c,#e6c550,#3fb57a)}
+  @media(min-width:700px){.legend i{width:200px;height:6px}}
+  @media(max-width:699px){.legend .lw{display:none}.mapui{left:0;right:0;bottom:0;padding:var(--s5) var(--g) var(--s3);background:linear-gradient(to top,color-mix(in srgb,var(--page) 94%,transparent) 55%,transparent)}.mapui .jump{display:none}}
+  .t-mouse{display:none}
+  @media(hover:hover){.t-touch{display:none}.t-mouse{display:inline}}
+  .mapui .jump{display:flex;align-items:baseline;gap:var(--s2);flex-wrap:wrap;width:100%}
+  .mapui .jump button{min-height:44px;color:var(--ink);font-weight:300;font-size:var(--t1);text-decoration:underline;text-decoration-color:var(--dim);text-underline-offset:4px}
+  .mapui .jump button:hover{text-decoration-color:var(--ink)}
+  @media(min-width:700px){.mapui .jump{width:auto;order:3}}
+  .zoomui{position:absolute;right:var(--edge);top:calc(var(--hdr) + var(--s3));z-index:6;display:flex;gap:6px;opacity:0;pointer-events:none;transition:opacity .4s}
+  .drive.free .zoomui{opacity:1;pointer-events:auto}
+  @media(max-width:699px){.zoomui{right:var(--g);top:calc(var(--hdr) + var(--s2))}#z-in,#z-out{display:none}.mapcap{font-size:12px}}
+  #z-out,#z-in{width:44px;padding:0;font-size:20px;line-height:1}
+  #jump-btns{display:inline-flex;gap:var(--s3)}
+  .zoomui button{min-width:44px;min-height:44px;padding:0 var(--s2);border:1px solid var(--rule);border-radius:22px;background:color-mix(in srgb,var(--page) 82%,transparent);color:var(--ink);font-size:var(--t1);backdrop-filter:blur(8px)}
+  .zoomui button:hover,.zoomui button:focus-visible{border-color:var(--ink);outline:none}
+  .maptip{position:absolute;z-index:7;pointer-events:none;font-size:var(--t1);color:var(--ink);background:color-mix(in srgb,var(--page) 88%,transparent);border:1px solid var(--rule);border-radius:6px;padding:6px 9px;white-space:nowrap;transform:translate(14px,-50%);opacity:0;transition:opacity .15s}
+  .maptip.on{opacity:1}
+  .maplibregl-cooperative-gesture-screen{font:400 15px/1.4 "Switzer",system-ui,sans-serif!important;background:color-mix(in srgb,var(--page) 70%,transparent)!important;color:var(--ink)!important}
+  .mapcap{position:absolute;left:var(--edge);top:calc(var(--hdr) + var(--s3));z-index:5;background:color-mix(in srgb,var(--page) 78%,transparent);padding:3px 6px;margin-left:-6px;border-radius:3px}
+  @media(max-width:699px){.mapcap{left:var(--g);top:calc(var(--hdr) + var(--s2))}}
+  .mapcredit{position:absolute;right:var(--g);bottom:6px;z-index:6;font-size:10px}
+  .mapcredit a{color:var(--soft);text-decoration:none}
+  /* spot card */
+  .spotsec{--page:#111419;--ink:#dfe5e8;--soft:rgba(223,229,232,.62);--dim:rgba(223,229,232,.28);--rule:rgba(223,229,232,.16);--acc:#8ec5ff;color:var(--ink);color-scheme:dark;background:var(--page)}
+  .spotsec .in{max-width:var(--col);margin:0 auto;padding:var(--sec) var(--g)}
+  .spot{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);align-items:center;gap:var(--s6)}
+  .spot[hidden]{display:none}
+  @media(max-width:700px){.spotsec .in{padding:var(--sec) var(--g) var(--s6)}.spot{grid-template-columns:1fr;gap:var(--s4)}.spot .imgs{grid-template-columns:1fr}}
+  .spot .step{display:flex;gap:var(--s1);margin:0 0 var(--s3)}
+  .spot .imgs{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2)}
+  .spot img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:#000}
+  .spot .lid{position:relative}.spot .lid svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .spot .nums{display:flex;gap:var(--s5);margin:var(--s1) 0 var(--s3);align-items:baseline}
+  .spot .nums b{font-weight:200;min-width:2.9em;font-size:var(--t4);line-height:1;letter-spacing:-.03em;display:block;margin-bottom:var(--s1)}
+  .spot .nums b.acc{color:var(--acc)}
+  /* the clip: a dark frame in both themes; on desktop the clip is as tall as the screen, on phone it is the full width */
+  .clipsec{--page:#0b0d10;--ink:#dfe5e8;--soft:rgba(223,229,232,.62);--dim:rgba(223,229,232,.28);--rule:rgba(223,229,232,.16);--acc:#8ec5ff;color:var(--ink);color-scheme:dark;background:var(--page)}
+  .clipsec .in{max-width:var(--col);margin:0 auto;padding:var(--s7) var(--g);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--s6);align-items:center}
+  .clipsec .in>div:first-child{padding:var(--s5) 0}
+  .clipsec .lab{display:block;margin-bottom:var(--s3)}
+  .clipsec h3{margin-bottom:var(--s3)}
+  .video{aspect-ratio:9/16;background:#000;height:min(calc(100dvh - 88px),900px);width:auto;margin:0}
+  .video video{width:100%;height:100%;display:block;object-fit:cover}
+  @media(min-width:700px){#try>div+div{display:flex;flex-direction:column;justify-content:center}}
+  @media(max-width:699px){.try>div{display:contents}.try .spots{order:1}.try .panels{order:2;margin:0 0 var(--s3)}.try label,.try .pushrow,.try #pushsay,.try>div:first-child>p.sub:last-child{order:3}}
+  @media(max-width:699px){.clipsec .in{grid-template-columns:1fr;gap:0;padding:0}.clipsec .in>div:first-child{padding:var(--sec) var(--g) var(--s4)}.video{height:auto;width:100%}}
+  /* method and ending */
+  ol{padding:0;list-style:none;margin:0;counter-reset:s}
+  ol li{counter-increment:s;border-top:1px solid var(--rule);padding:var(--s3) 0 var(--s3) var(--s5);position:relative;max-width:60ch}
+  ol li::before{content:counter(s);position:absolute;left:0;top:var(--s3);font:400 var(--t1)/1.6 ui-monospace,"SF Mono",Menlo,Consolas,monospace;color:var(--soft)}
+  #method .head{grid-column:1/-1;padding:0 0 var(--s4);border:0}
+  #method>div+div{border-left:0;padding-left:0}
+  @media(min-width:700px){#method>div:nth-child(3){padding-left:var(--s5);border-left:1px solid var(--rule)}#method>div:nth-child(2){padding-right:var(--s5)}}
+  details{border-top:1px solid var(--rule)}
+  summary{cursor:pointer;padding:var(--s3) 0;list-style:none;display:flex;justify-content:space-between;min-height:44px;align-items:center;font-size:var(--t2)}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";color:var(--soft);font-weight:200;font-size:26px}
+  details[open] summary::after{content:"\2212"}
+  #built .links{display:flex;flex-wrap:wrap;gap:var(--s1) var(--s4);margin-top:var(--s2);font-weight:300}
+  #built .links a{text-decoration-color:var(--dim);width:max-content}
+  #built .ask{margin-top:var(--s3);padding:var(--s3) 0 0;border-top:1px solid var(--rule);max-width:48ch}
+  footer{padding:var(--s5) 0 var(--s6);border-top:1px solid var(--rule);margin-top:0;font-size:var(--t1);color:var(--soft);display:grid;grid-template-columns:1fr 1fr}
+  footer>div+div{padding-left:var(--s5);border-left:1px solid var(--rule)}
+  footer>div:first-child{padding-right:var(--s5)}
+  @media(max-width:700px){footer{grid-template-columns:1fr;gap:var(--s2)}footer>div+div{padding-left:0;border-left:0}footer>div:first-child{padding-right:0}}
+  footer p{margin-bottom:var(--s1);max-width:none}
+  /* fallbacks: no WebGL or a weak GPU shows a still of the scan; an in-app browser gets an open-in-browser link */
+  .stage.scan .scanlab,.stage.scan .legend3d{opacity:1}
+  .still{position:absolute;inset:0;background:#0b0d10 url(media/hero_scan_poster.webp) center/cover no-repeat;opacity:0;transition:opacity .6s;z-index:1}
+  .nogl .still{opacity:1}
+  @media(max-width:700px){.spot .imgs{grid-template-columns:1fr}.mapui .jump{display:none}}
+  @media (prefers-reduced-motion:reduce){h1 .w{opacity:1}.beat,.callout{transition:none}.sw>span{transform:none!important;opacity:1!important}}
 </style>
 </head>
 <body>
-<header><b>Snowbound</b><span><span class="where" id="where">North Toronto, 26 Jan 2021, snowstorm</span><a id="openout" href="#" target="_blank" rel="noopener">Open in browser</a></span></header>
+<header class="hdr">
+  <div><b>Snowbound</b> <span class="sub" style="font-size:12px">by Wilsawn Dideh</span></div>
+  <div class="mid lab">26 Jan 2021 &middot; real lidar, Boreas dataset</div>
+  <div class="right"><a id="openin" class="lab" href="" target="_blank" rel="noopener">open in browser</a><span class="lab" id="weather" hidden></span><button class="lab" id="theme" aria-label="Switch light and dark">light</button></div>
+</header>
 
-<div class="pinned">
+<!-- the hero: the snowy dashcam, then the real scan; the camera moves with the scroll -->
+<div class="hero" id="hero">
   <div class="stage" id="stage">
-    <canvas id="scan" aria-label="Half a second of lidar (five sweeps) from above: the car at the centre, 200,000 laser hits, snow in the air drawn pale."></canvas>
-    <img id="poster" src="scan_poster.webp" alt="A still of the storm scan from above: the car at the centre, laser hits around it, snow in the air." width="1440" height="1440" loading="lazy">
-    <svg id="pushfb" aria-hidden="true"></svg>
-    <div id="pins">
-      <div class="pin r" id="pin-lidar">the lidar, from above</div>
-      <div class="pin" id="pin-cam">the camera, same moment</div>
-      <div class="pin snow" id="pin-snow">snow in the air</div>
-      <div class="pin" id="pin-road">the road</div>
-      <div class="pin r" id="pin-car">the car, true size</div>
-      <div class="pin storm" id="pin-r1">1.5 m<small>in the storm</small></div>
-      <div class="pin r" id="pin-r2">3 m+<small>a week earlier, no snow</small></div>
-    </div>
-    <div id="fade"></div>
-    <div id="cover"></div>
-  </div>
-
-  <div class="beats">
-    <section class="beat" id="b1" data-state="hero">
-      <div class="layer">
-        <figure id="cam"><img src="media/hero_cam.jpg" alt="The car's dashcam in the snowstorm: a wide road, two cars ahead, snow blowing across." width="1600" height="1006" fetchpriority="high"></figure>
-        <div id="tie"></div>
-        <div class="text">
-          <div class="lg" aria-hidden="true"><span>road</span><i></i><span>3 m</span></div>
-          <p class="lead">A laser scan of a Toronto street in a snowstorm, 26 Jan 2021.</p>
-          <p class="body">In a snowstorm, how far off can a self-driving car's guess of its own position be before it can no longer find itself on its map? I tested it on this street: I pushed the car's position guess off its map on purpose and let it find its way back. Room for error is the biggest push it recovered from.</p>
-          <p class="who"><b>Wilsawn "Delo" Dideh</b>, software engineer, Ottawa</p>
-          <p class="sensor" id="sensor">Velodyne Alpha Prime, 128 ch.<span class="when">Boreas, Toronto.</span></p>
-        </div>
-      </div>
-    </section>
-
-    <section class="beat tall" id="b2">
-      <div class="sub" id="b2a" data-state="snow">
-        <div class="layer"><div class="text">
-          <div class="lg" aria-hidden="true"><span>road</span><i></i><span>3 m</span></div>
-          <p class="lead">23,332 of these 200,000 laser hits are flagged as snow. The street is still there behind them.</p>
-          <p class="body">This is half a second of lidar, five sweeps stacked. The car finds its way back by matching it to its map of the road. The snow is in the scan and not on the map, so the matcher has to see through it.</p>
-        </div></div>
-      </div>
-      <div class="sub" id="b2b" data-state="nosnow">
-        <div class="layer"><div class="text">
-          <div class="lg" aria-hidden="true"><span>road</span><i></i><span>3 m</span></div>
-          <p class="lead">Take the snow out and this is what the matcher has to line up: the road, the kerbs, the walls.</p>
-          <p class="body">Points coloured by height: dim on the road, light on walls and trees. The faint grid is 10 m.</p>
-        </div></div>
-      </div>
-    </section>
-
-    <section class="beat" id="b3" data-state="clear">
-      <div class="layer"><div class="text">
-        <div class="lg" aria-hidden="true"><span>road</span><i></i><span>3 m</span></div>
-        <p class="lead">Same spot, a week earlier, no snow falling.</p>
-        <p class="body">The car drove the same 7.9 km loop twice: in the storm, and seven days before with the road clear. This scan still has 9,905 points flagged as snow.</p>
-        <p class="sensor" id="sensor2">Velodyne Alpha Prime, 128 ch.<span class="when">Boreas, Toronto.</span></p>
-      </div></div>
-    </section>
-
-    <section class="beat" id="b4" data-state="push">
-      <div class="layer"><div class="text">
-        <div class="lg" aria-hidden="true"><span>road</span><i></i><span>3 m</span></div>
-        <p class="lead">At this spot the car came back from a 1.5 m push in the storm. With no snow, from 3 m+.</p>
-        <p class="body">Each size was pushed in 8 directions; it passes when 7 of 8 come back within 30 cm and 2 degrees. 3 m was the biggest push tried, so 3 m+ means it never failed. 3 m is about a parking space wide, 1.5 m about half of one.</p>
-        <div class="marks" id="marks" aria-label="The ten push sizes at this spot in the storm; a filled mark came back"></div>
-        <p class="label">The ten sizes in the storm at this spot, in metres: filled came back, hollow did not. With no snow every size came back.</p>
-      </div></div>
-    </section>
-
-    <section class="beat" id="b5" data-state="try">
-      <div class="layer">
-        <div id="try">
-          <div class="tryhead">
-            <p class="lead">Try it: pick a spot and a push.</p>
-            <p class="body">Real results, nothing simulated. Spot A is the spot above; B and C are two more on the loop. The ring is the push, with a tick at each of the 8 directions; the count is how many of the 8 came back on each day (which direction is not recorded).</p>
-            <div class="ctl">
-              <div class="row"><span>Spot</span><div class="seg" id="spots" role="group" aria-label="Pick a spot"></div></div>
-              <div class="row"><span>Push</span><div class="seg sizes" id="sizes" role="group" aria-label="Push size in metres"></div></div>
-            </div>
-          </div>
-          <div class="two">
-            <div class="scanbox" id="box-storm"><canvas id="cv-try-storm" aria-label="This spot from above in the storm, with the push ring at true scale"></canvas><svg id="ov-storm" aria-hidden="true"></svg></div>
-            <div class="scanbox" id="box-clear"><canvas id="cv-try-clear" aria-label="The same spot from above a week earlier, no snow, with the push ring at true scale"></canvas><svg id="ov-clear" aria-hidden="true"></svg></div>
-            <p class="cap" id="cap-storm">In the storm</p>
-            <p class="cap" id="cap-clear">No snow a week earlier</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="beat" id="b6" data-state="result">
-      <div class="layer">
-        <div id="result">
-          <div class="lede">
-            <p class="display">Snow shrinks a self-driving car's room for error.</p>
-            <p class="num">111 of 271<small>spots where snow cut the room</small></p>
-            <p class="body">The typical spot went from 3 m+ with no snow to 2.5 m in the storm.</p>
-          </div>
-          <div id="chart" aria-label="Room for error at every spot around the loop, both days">
-            <div class="strip"><canvas id="cv-clear"></canvas><div class="typ" style="top:0"><span>typical 3 m+</span></div></div>
-            <div class="axis"><span>start of the loop</span><span>7.4 km along the loop</span></div>
-            <div class="strip s"><canvas id="cv-storm"></canvas><div class="typ s" id="typ-storm"><span>typical 2.5 m</span></div></div>
-            <p class="cap"><b>Top, no snow a week earlier. <span class="s">Bottom, in the storm.</span></b> One bar per spot; taller is more room. Amber bars are the 111 spots where snow cut the room; light grey, the storm spots it did not. Dark grey failed the smallest push, 0.25 m, on that day.</p>
-            <p class="after">An earlier run said 147; a height bug let the storm scans sink, and with it fixed the count is 111.</p>
-          </div>
-        </div>
-      </div>
-    </section>
+    <canvas id="cloud" aria-label="A real lidar scan of a Toronto street in a snowstorm, turning slowly"></canvas>
+    <div class="cam" id="cam"><video id="heroVideo" muted loop playsinline webkit-playsinline autoplay preload="metadata" aria-hidden="true"></video></div>
+    <div class="beat on" data-beat="0"><div class="card q"><span class="lab">[ the question ]</span>
+      <h1 id="h1">If a self-driving car loses track of where it is in a snowstorm, how far off can its guess be and still recover?</h1>
+      <p class="answer">Here, in the storm, it snapped back from a push of <b id="a-here">1.5 m</b>. At a typical spot on the loop, <b id="a-typ">2.5 m</b>; with no snow falling, <span id="a-clear">3 m or more</span>.</p>
+      <div class="links"><a href="#method">How I measured it</a><a href="#route">The numbers</a><a href="https://github.com/Wilsawn/snowbound" target="_blank" rel="noopener">GitHub</a></div>
+    </div></div>
+    <div class="beat" data-beat="1"><div class="card"><span class="lab">[ what the lidar saw at that moment ]</span><p>Every point is a laser hit. <span class="snowline"><b>The blue specks are snow in the air.</b> The street is still there behind them.</span></p></div></div>
+    <div class="beat" data-beat="2"><div class="card"><span class="lab">[ same spot, a week earlier, no snow falling ]</span><p>I pushed its position guess <b id="b3-clear">3 m</b> off on purpose. It still found itself.</p><p class="why" id="b3-say"></p></div></div>
+    <div class="beat guess" data-beat="3"><div class="card"><span class="lab">[ your guess ]</span><p>Same spot, back in the storm. How far off can it start and still recover?</p>
+      <div class="choices" role="group" aria-label="Your guess"><button data-g="0.5" aria-pressed="false">0.5 m</button><button data-g="1.5" aria-pressed="false">1.5 m</button><button data-g="3" aria-pressed="false">3 m</button><button class="skip" id="guess-skip">skip</button></div>
+      <p class="verdict" id="verdict" aria-live="polite"></p></div></div>
+    <div class="beat" data-beat="4"><div class="card"><span class="lab" id="b5-lab">[ the storm, same spot ]</span><p>The biggest push it recovered from here, its room for error, was <b class="huge" id="b4-storm">...</b></p><p class="why" id="b4-say"></p></div></div>
+    <div class="scanlab lab" id="scanlab"><span>Velodyne Alpha Prime, 128 ch</span><span>Boreas, Toronto</span><span id="scantime"></span></div>
+    <div class="legend3d lab" id="legend3d"><span>road</span><i></i><span>3 m up</span><span style="margin-left:8px"><b>&bull;</b> snow</span></div>
+    <span class="ringlab lab" id="ringlab"></span>
+    <div class="still" aria-hidden="true"></div>
+    <ul class="rail" id="hero-rail" aria-label="Beats"></ul>
+    <canvas id="flakes" aria-hidden="true"></canvas>
+    <button class="snowtoggle" id="snowtoggle" aria-pressed="false">Hide the snow</button>
+    <span class="snowcap" id="snowcap"></span>
   </div>
 </div>
 
-<div class="flow">
-  <section id="b7" aria-label="Where on the loop">
-    <canvas id="loopbg" aria-hidden="true"></canvas>
-    <div class="fade"></div>
-    <svg id="loop" role="img" aria-label="7.4 km of the 7.9 km loop with 271 spots, each coloured by its room for error in the storm"></svg>
-    <div class="text">
-      <p class="lead">Where on the loop.</p>
-      <p class="body">Each dot is one of the 271 spots along 7.4 km of the 7.9 km loop, coloured by its room for error in the storm.</p>
-      <div class="key"><span><i style="background:var(--clear)"></i>3 m+</span><span><i style="background:var(--storm)"></i>under 3 m</span><span><i style="background:var(--fail)"></i>failed the smallest push, 0.25 m</span></div>
+<main>
+<div class="wrap">
+  <section class="thesis" id="route">
+    <span class="lab">[ 7.4 km, 271 spots on a 20 m grid ]</span><h2>Snow shrinks a self-driving car's room for error.</h2>
+    <div class="stats" id="stats">
+      <div><div class="n"><span data-count="3">0</span><small>m+</small></div><span class="lab">no snow falling, typical spot</span></div>
+      <div><div class="n acc"><span data-count="2.5" data-dec="1">0</span><small>m</small></div><span class="lab">snowstorm, typical spot</span></div>
+      <div><div class="n"><span data-count="111">0</span><small>of 271</small></div><span class="lab">spots where snow cut the room</span></div>
+    </div>
+    <div class="copy">
+      <div><p class="lead">Strongest between 0.8 and 1.7 km into the loop: 3 m+ with no snow, 1.6 to 2 m in the storm.</p>
+      <p class="sub">Typical spot: half the spots did better, half did worse. 3 m is about a parking space wide; 0.25 m, the smallest push, about a shoe.</p></div>
+      <div><p>Room for error: how far off the car's position guess can be and still snap back onto the map. I pushed it off on purpose, 0.25 m to 3 m, at 271 spots on a 20 m grid along 7.4 km of a 7.9 km Toronto loop (kept where both drives had a scan, so mostly 20 to 40 m apart), on both days. 3 m was the biggest push, so "3 m+" means it never failed.</p>
+      <p>Smaller at 111 of the 271 spots, the same at 142, bigger at 18. Numbers from the height-locked rerun of 23 November (see The limits).</p>
+      <p class="sub">Why it matters: Waymo plans robotaxis in Toronto by 2028 (<a href="https://electrek.co/2026/10/16/waymo-toronto-canada-robotaxi-2028/" target="_blank" rel="noopener">Electrek</a>).</p></div>
     </div>
   </section>
-
-  <section id="b8" aria-label="Twelve seconds at spot 002_011, both days">
-    <canvas id="clipbg" aria-hidden="true"></canvas>
-    <div id="clipfig">
-      <video id="clip" poster="media/part2_poster.webp" muted playsinline loop preload="none" data-src="media/part2.mp4" width="720" height="1280" aria-label="Twelve seconds at spot 002_011 on both days: the lidar seen from behind the car, the camera inset at the top right"></video>
-      <figure id="cam2"><canvas id="camcv" width="720" height="640" aria-label="The camera, the same twelve seconds"></canvas></figure>
+  <section class="row try" id="try">
+    <div>
+      <span class="lab">[ try it yourself · real test results ]</span>
+      <h3>Push the car's guess off. Does it snap back?</h3>
+      <p>Pick a spot and a push. Each panel is that day's real scan from above, 16 m across; the ring is the push, the eight marks are where I pushed it. Real results, nothing simulated.</p>
+      <div class="spots" role="group" aria-label="Spot"><button data-k="0" aria-pressed="true">Spot 42</button><button data-k="1" aria-pressed="false">Spot 90</button><button data-k="2" aria-pressed="false">Spot 117</button></div>
+      <label class="sub" for="push">Push the car's guess off by</label>
+      <div class="pushrow"><input type="range" id="push" min="0" max="9" step="1" value="4" aria-label="Push size"><b id="pushval">1.25 m</b></div>
+      <p class="sub" id="pushsay"></p>
+      <p class="sub" style="margin-top:20px;max-width:40ch">Recovered means it landed within 30 cm and 2 degrees of the truth. A size counts as passed when 7 of 8 directions recover.</p>
     </div>
-    <div class="fade"></div>
-    <div class="caption">
-      <div class="lg" aria-hidden="true"><span>road</span><i></i><span>3 m</span></div>
-      <p><b>A different spot, 002_011: twelve seconds, both days.</b> In the storm its room was 1.25 m; with no snow, 2.5 m. The lidar seen from behind the car, looking down the street; the camera inset at the top right, same twelve seconds. Tap to pause.</p>
-      <p class="sensor">Velodyne Alpha Prime, 128 ch.<span class="when">Boreas, Toronto. 26 Jan 2021, then 19 Jan 2021</span></p>
+    <div>
+      <div class="panels">
+        <figure class="panel" id="p-storm"><div class="lid"><img alt="Lidar from above, snowstorm"><svg viewBox="0 0 400 400"></svg></div><figcaption><b>Snowstorm</b><span id="r-storm"></span></figcaption></figure>
+        <figure class="panel" id="p-clear"><div class="lid"><img alt="Lidar from above, no snow"><svg viewBox="0 0 400 400"></svg></div><figcaption><b>No snow</b><span id="r-clear"></span></figcaption></figure>
+      </div>
     </div>
-  </section>
-
-  <section id="b9" class="page" aria-label="How I measured it">
-    <div class="inner">
-      <div class="prose">
-        <div class="block">
-          <p class="lead">How I measured it.</p>
-          <p class="body">The map is the same loop driven in clear weather on 26 Nov 2020, two months before the storm. At 271 spots on a 20 m grid along 7.4 km of the 7.9 km loop (kept where both drives had a scan, so 20 to 40 m apart), I moved the car's position guess off the truth on purpose: 0.25 m up to 3 m, in 8 directions, with a 5 degree turn added, on both days. The matcher slid and turned the scan until it fit the map (ICP, point to plane), with its height locked to the road. A push recovered if it ended within 30 cm and 2 degrees of the truth, and a size passed when 7 of 8 directions recovered.</p>
-          <p class="body">Room for error is the biggest push that passed before the first size that failed, counting up from the smallest; 3 m was the biggest tried, so 3 m+ means it never failed. Typical means the median. Snow cut the room at 111 spots, left it at 142 and widened it at 18.</p>
-        </div>
-        <div class="block">
-          <p class="lead">The limits.</p>
-          <p class="body">One drive per kind of weather. 202 no-snow spots and 120 storm spots hit the 3 m cap, so the real gap is at least what the numbers show. 12 spots fail the smallest push on both days: the method, not the snow. The last 400 m is hard on both days: the road, not the weather. Every value is good to about half a metre, the two days differ in more than snow, and a wider search window makes the numbers bigger.</p>
-        </div>
-      </div>
-      <figure class="fig" id="fig"><svg id="hist" role="img" aria-label="How many of the 271 spots had each room for error, in the storm and with no snow"></svg><p class="label">How many spots had each room for error. Amber is the storm; grey is the week earlier with no snow. 3 m+ is the cap.</p></figure>
-    </div>
-  </section>
-
-  <section id="b10" class="page" aria-label="What I learned">
-    <div class="inner">
-      <div class="block">
-        <p class="lead lesson">What I learned: the street is still there under the snow. What the storm takes is the car's margin for being wrong, and that margin was only honest once I stopped the matcher letting the scans sink.</p>
-      </div>
-      <div class="block">
-        <p class="lead">What's next.</p>
-        <p class="body">More storms, the speeds the no-snow car drove at, and the wider search window. Scripts, notes and every per-spot result are at <a href="https://github.com/Wilsawn/snowbound">github.com/Wilsawn/snowbound</a>.</p>
-      </div>
-      <div class="block">
-        <p class="lead">Built by Wilsawn Dideh.</p>
-        <p class="body">Software engineer and community builder, Ottawa. I wrote the test in Python and scipy, and this page.</p>
-        <p class="body">Into autonomy and robotics. If you're building in that space, I'd love to chat.</p>
-        <div class="links"><a href="https://www.linkedin.com/in/wilsawn-dideh">LinkedIn</a><a href="https://github.com/Wilsawn">GitHub</a><a href="mailto:didehw@gmail.com">didehw@gmail.com</a></div>
-      </div>
-      <p class="credits">Data: <a href="https://www.boreas.utias.utoronto.ca/">Boreas</a>, University of Toronto, CC BY 4.0. The study this builds on: Burnett et al., <a href="https://arxiv.org/abs/2203.10174">arXiv 2203.10174</a>. The scans and the loop are drawn on canvas with no library; the device tier comes from <a href="https://github.com/pmndrs/detect-gpu">detect-gpu</a>, MIT. Type: Familjen Grotesk and IBM Plex Mono, Open Font License, via Google Fonts. Not affiliated with the University of Toronto or any car company.</p>
-    </div>
-    <figure id="endfig" aria-label="The street a week earlier with no snow falling, from above, dimmed"><canvas id="endcv"></canvas><img src="scan_poster.webp" alt="" width="1440" height="1440" loading="lazy"></figure>
   </section>
 </div>
 
-<script type="module">
-/* ---------- tokens ---------- */
-const BG = [10, 13, 18];
-const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const MOVE = REDUCED ? 0 : 600;                                   // one timed move on forward entry, ms
-const easeInOut = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;   // the in-out curve, close to cubic-bezier(.77,0,.175,1)
-const $ = id => document.getElementById(id);
-const Q = new URLSearchParams(location.search);
-const PHONE = matchMedia('(max-width: 999px)').matches || navigator.maxTouchPoints > 1 && innerWidth < 1000;
-const LABEL = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--label')) || 16;   // the label size, for text drawn in SVG
-const POSTER = Q.get('poster') === '1';                           // renders the still for scan_poster.webp
-if (POSTER) document.body.classList.add('poster');
+<!-- the drive: a marker drives the loop, stops at three spots, then the whole loop opens up -->
+<div class="drive" id="drive">
+  <div class="stage">
+    <div id="map" role="img" aria-label="Map of the loop; a marker drives the route and stops at three spots"></div>
+    <span class="mapcap lab" id="mapcap">[ driving the loop ]</span>
+    <div class="zoomui"><button id="z-out" aria-label="Zoom out">&minus;</button><button id="z-in" aria-label="Zoom in">+</button><button id="z-all">whole loop</button></div>
+    <div class="maptip" id="maptip" aria-hidden="true"></div>
+    <ul class="rail" id="drive-rail" aria-label="Stops"></ul>
+    <span class="mapcredit lab"><a href="https://openfreemap.org">OpenFreeMap</a> &middot; &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a></span>
+    <div class="callout card" id="callout"><div class="head"><img id="c-cam" alt=""><span class="sub" id="c-lab"></span></div><div class="nums"><div><b class="acc" id="c-storm"></b><span class="sub">snowstorm</span></div><div><b id="c-clear"></b><span class="sub">no snow</span></div></div><div class="step cstep"><button id="c-prev" aria-label="Previous spot">&larr; prev</button><button id="c-next" aria-label="Next spot">next &rarr;</button><a href="#spot" id="c-more" class="sub">full card &darr;</a><button id="c-close" aria-label="Close">&times;</button></div><span id="c-jump" hidden></span></div>
+    <div class="mapui" id="mapui">
+      <div class="toggle" role="group" aria-label="Day"><button id="b-storm" aria-pressed="true">Snowstorm</button><button id="b-clear" aria-pressed="false">No snow</button></div>
+      <div class="legend sub"><span class="lw">room for error</span><span>0 m</span><i></i><span>3 m+</span><span style="margin-left:12px"><span class="t-touch">tap a dot</span><span class="t-mouse">click a dot</span></span></div>
+      <div class="jump sub"><span>The three stops</span><span id="jump-btns"></span></div>
+    </div>
+  </div>
+</div>
 
-/* ---------- in-app browsers get a way out ---------- */
-if (Q.get('inapp') === '1' || /LinkedInApp|Instagram|FBAN|FBAV|FB_IAB|Line\//i.test(navigator.userAgent)) {
-  document.body.classList.add('inapp');
-  const a = $('openout'); a.href = location.href.replace(/[?&]inapp=1/, '');
-}
+<section class="spotsec" id="spotsec"><div class="in">
+  <div class="spot" id="spot" hidden>
+    <div><div class="step"><button id="s-prev" aria-label="Previous spot">&larr; prev</button><button id="s-next" aria-label="Next spot">next &rarr;</button></div><span class="sub" id="s-head"></span><div class="nums"><div><b id="s-storm" class="acc"></b><span class="sub">snowstorm</span></div><div><b id="s-clear"></b><span class="sub">no snow</span></div></div>
+      <p>Left: the car's camera that day. Right: its lidar from above, 32 m across, the car at the centre heading up. The circle is the room for error at true scale; dashed means at least this much.</p></div>
+    <div><div class="imgs"><img id="s-cam" alt="Dashcam at this spot"><div class="lid"><img id="s-lid" alt="Lidar from above at this spot, with the room for error drawn to scale"><svg viewBox="0 0 400 400"><circle id="s-circ" cx="200" cy="200" r="6" fill="none" stroke-width="3"/></svg></div></div></div>
+  </div>
+</div></section>
+<section class="clipsec" id="videosec">
+  <div class="in">
+    <div><span class="lab">[ twelve seconds, both days ]</span><h3>Top: the car's camera. Bottom: its lidar at the same moment, the room for error drawn under the car.</h3><p class="sub" id="clipnote"></p><p class="sub">No sound. Tap to pause.</p></div>
+    <div class="video"><video id="clip" data-src="media/part2.mp4" data-poster="media/part2_poster.webp" muted loop playsinline webkit-playsinline preload="none" aria-label="Twelve seconds of the drive, tap to play or pause"></video></div>
+  </div>
+</section>
+<div class="wrap">
 
-/* ---------- device tier. The first frame does not wait for detect-gpu: a provisional tier starts the scan loading at once. ---------- */
-const stage = $('stage'), canvas = $('scan'), ctx = canvas.getContext('2d');
-let tier = Q.has('tier') ? Number(Q.get('tier')) : (PHONE ? 2 : 3);
-let firstDrawn = false;
-function goNogl() { tier = 0; stage.classList.add('nogl'); document.body.classList.add('nogl'); }
-if (!Q.has('tier')) {
-  const probe = document.createElement('canvas');
-  if (!(probe.getContext('webgl2') || probe.getContext('webgl'))) goNogl();
-  else (async () => {
-    try {
-      const mod = await Promise.race([import('https://unpkg.com/detect-gpu@5.0.70/dist/detect-gpu.esm.js'), new Promise((_, rej) => setTimeout(() => rej(new Error('slow')), 2000))]);
-      const g = await Promise.race([mod.getGPUTier(), new Promise((_, rej) => setTimeout(() => rej(new Error('slow')), 2000))]);
-      if (Number.isFinite(g.tier) && g.tier <= 1 && !firstDrawn) goNogl();     // a weak device gets the poster; once the live scan is up it stays
-    } catch (e) { /* no network or a slow benchmark: keep the provisional tier */ }
-  })();
-}
-if (tier <= 1) goNogl();
-window.__snow = { tier };
-const POINTS = tier >= 3 ? 150000 : tier === 2 ? (PHONE ? 40000 : 80000) : 40000;
+  <section class="row" id="method">
+    <div class="head"><span class="lab">[ how I measured it ]</span><h3>Push the guess off, let the matcher slide the scan back, count the recoveries.</h3><p class="sub" style="max-width:52ch">Engineers call this the convergence basin: the largest starting error from which the scan matcher (ICP) still finds the right pose.</p></div>
+    <div>
+      <ol>
+        <li>Build a 3D map of the loop from a drive two months earlier with no snow (26 November 2020), placing each scan with the car's recorded position.</li>
+        <li>Take a scan from the storm, or from the no-snow day, and start it from a guess that is deliberately off: 0.25 m to 3 m, eight directions, with a 5 degree turn added.</li>
+        <li>Let the matcher (ICP, point to plane) slide the scan onto the map.</li>
+        <li>Count it as recovered if it lands within 30 cm and 2 degrees of the truth. The room for error is the biggest push where 7 of 8 directions recover. "3 m+" means every size passed.</li>
+      </ol>
+    </div>
+    <div>
+      <details open>
+        <summary>The limits</summary>
+        <p>271 spots, one drive per kind of weather. 202 of the no-snow spots and 120 of the storm spots hit the 3 m cap, so the real gap is at least what the numbers show. 12 spots fail at the smallest push on both days: that is the method, not the snow. The last 400 m is hard on both days: that is the road, not the weather. Every value is good to about half a metre.</p>
+        <p>Fixed 23 November. The matcher used to be free to move the scan up and down as well as sideways. In the storm that let it sink a moving scan about 2.5 m so the snow in the air landed on the road, and the test counted a failure that was not one. Every number on this page is now from a rerun of all 271 spots with the height locked: the matcher may only slide and turn. The lock changed 101 storm values and 17 no-snow values. The count of spots where snow cut the room went from 147 to 111, the typical values did not move (storm 2.5 m, no snow 3 m+), and 18 storm spots still read 0 m, 12 of them on both days. The free-matcher numbers stay in the results folder for comparison.</p>
+        <p>The two days differ in more than falling snow: a week of parked cars and snowbanks, and the no-snow car drove faster. The map is thinner over most of the loop than on the first street I measured; re-running that street gave the same conclusion but storm values about one step smaller. The result holds for these matcher settings; a wider search window recovers more often and makes the numbers bigger.</p>
+        <p>The dashcam frames are untouched apart from a light grade on the opening photo; the falling snow drawn over that photo is an effect, not data. The lidar scans are real scans with only the car's own body (within 3 m) removed; the two 3D scans in the opening are 200,000 points each in the files, drawn as 150,000 on a fast computer, 80,000 on most, 40,000 on phones.</p>
+      </details>
+    </div>
+  </section>
 
-/* ---------- data ---------- */
-const ROT = 46 * Math.PI / 180;   // the scan frame to heading-up, matched against media/spots/003_005_*_lidar.webp
-const scans = { storm: null, clear: null };
-function newScan(cap) { return { x: new Float32Array(cap), y: new Float32Array(cap), z: new Float32Array(cap), br: new Uint8Array(cap), sn: new Uint8Array(cap), n: 0, cap, done: false }; }
-function grow(s) {
-  const cap = s.cap * 2, g = newScan(cap);
-  g.x.set(s.x); g.y.set(s.y); g.z.set(s.z); g.br.set(s.br); g.sn.set(s.sn);
-  Object.assign(s, { x: g.x, y: g.y, z: g.z, br: g.br, sn: g.sn, cap });
+  <section class="row" id="built">
+    <div><span class="lab">[ what I learned ]</span><h3>Snow cuts the room for error, but not everywhere, and the test can fool you.</h3><p>At 111 of 271 spots the storm left less room; at 142 it made no difference. The matcher fooled me once, by sinking a storm scan until the snow sat on the road (The limits has the story). The last 400 m is hard on both days: that is the road, not the weather.</p><p><span class="lab">[ next ]</span><br>Find where it breaks: more storms, the speeds the no-snow car drove at, and the wider search window. Scripts, notes and every per-spot result are at <a href="https://github.com/Wilsawn/snowbound">github.com/Wilsawn/snowbound</a>.</p></div>
+    <div><span class="lab">[ built by ]</span><h3>Built by Wilsawn Dideh.</h3><p>Software engineer and community builder, Ottawa. I wrote the test in Python and scipy, and this page.</p><p class="ask" id="ask">Into autonomy and robotics. If you're building in that space, I'd love to chat.</p><div class="links"><a href="https://www.linkedin.com/in/wilsawn-dideh" target="_blank" rel="noopener">LinkedIn</a><a href="https://github.com/Wilsawn" target="_blank" rel="noopener">GitHub</a><a href="mailto:didehw@gmail.com">didehw@gmail.com</a></div></div>
+  </section>
+  <footer>
+    <div>
+    <p>Data: <a href="https://www.boreas.utias.utoronto.ca/">Boreas dataset</a>, University of Toronto, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. The study this builds on: Burnett et al., <a href="https://arxiv.org/abs/2203.10174">arXiv 2203.10174</a>. Not affiliated with the University of Toronto or any car company.</p>
+    </div>
+    <div>
+    <p>Map: <a href="https://openfreemap.org">OpenFreeMap</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. Live weather in the header: <a href="https://open-meteo.com">Open-Meteo</a>. Type: Switzer (Fontshare). Motion and 3D: GSAP, three.js, MapLibre.</p>
+    </div>
+  </footer>
+</div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin=""></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" crossorigin=""></script>
+<script>
+// ---------- theme (dark, or the light version in Riotters' palette) ----------
+const root=document.documentElement;
+const Q=new URLSearchParams(location.search);
+function setTheme(t){root.dataset.theme=t;document.getElementById("theme").textContent=t==="light"?"dark":"light";try{localStorage.setItem("theme",t)}catch(e){};dispatchEvent(new Event("themechange"));}
+{let t="dark";try{t=localStorage.getItem("theme")||t}catch(e){} if(Q.get("theme")) t=Q.get("theme"); setTheme(t);}
+document.getElementById("theme").onclick=()=>setTheme(root.dataset.theme==="light"?"dark":"light");
+{const v=document.getElementById("heroVideo"); const tall=matchMedia("(orientation: portrait)").matches; v.poster=tall?"media/hero_tall_poster.webp":"media/hero_wide_poster.webp"; v.src=tall?"media/hero_tall.mp4":"media/hero_wide.mp4"; v.play&&v.play().catch(()=>{});}
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)), ease=t=>t*t*(3-2*t), lerp=(a,b,t)=>a+(b-a)*t;
+const ink=()=>root.dataset.theme==="light"?"#28363e":"#dfe5e8", page=()=>root.dataset.theme==="light"?"#dfe5e8":"#0b0d10", acc=()=>getComputedStyle(root).getPropertyValue("--acc").trim();
+const M_INK="#dfe5e8", M_PAGE="#0b0d10", M_ACC="#8ec5ff";   // the map frame is dark in both themes
+
+// ---------- scroll: native scroll picks the beat; each beat's move plays once as a timed tween (no scrub, no smoothing library) ----------
+// Scrolling back shows the earlier beat's end state at once, nothing runs in reverse. Reduced motion: every tween is instant.
+const hero=document.getElementById("hero"), driveEl=document.getElementById("drive");
+const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let heroBeat=-1, driveBeat=-1, heroVisible=true, driveVisible=false, heroST=null, driveST=null;
+const SCANTIME={storm:"",clear:""};   // the two scans' own timestamps, filled from data/scans.json
+gsap.registerPlugin(ScrollTrigger);
+const HB=["The question","The scan","No snow","Your guess","The storm"], DB=["Stop 1","Stop 2","Stop 3","The whole loop"];
+const HSTEP=[0.8,1.5,1.5,1.2,1.2], DSTEP=0.9;   // screens of scroll per hero beat (the question 0.8, the two story beats 1.5, the guess and the answer 1.2) and per drive beat
+const HSUM=HSTEP.reduce((a,b)=>a+b,0), HCUM=HSTEP.map((v,i)=>HSTEP.slice(0,i).reduce((a,b)=>a+b,0));
+let VH=innerHeight, lastW=innerWidth;
+// pinned heights in px from innerHeight (The Pudding: vh jumps when a phone's address bar hides), only recomputed when the width changes
+function sizePins(){VH=innerHeight;hero.style.height=Math.round(VH*(1+HSUM))+"px";driveEl.style.height=Math.round(VH*(1+DB.length*DSTEP))+"px";}
+sizePins(); addEventListener("resize",()=>{if(innerWidth!==lastW){lastW=innerWidth;sizePins();ScrollTrigger.refresh();}});
+const topOf=el=>el.getBoundingClientRect().top+scrollY;
+function heroBeatAt(){const u=(scrollY-topOf(hero))/VH;let b=0;for(let i=1;i<HSTEP.length;i++) if(u>=HCUM[i]) b=i;return b;}
+function driveBeatAt(){return Math.max(0,Math.min(DB.length-1,Math.floor((scrollY-topOf(driveEl))/VH/DSTEP)));}
+function heroBeatY(b){return Math.round(topOf(hero)+(b===0?0:(HCUM[b]+0.03)*VH));}
+function driveBeatY(b){return Math.round(topOf(driveEl)+(b*DSTEP+0.03)*VH);}
+function jumpTo(y){scrollTo({top:y,behavior:RM?"auto":"smooth"});}
+// cubic-bezier(0.77, 0, 0.175, 1) as a function: the curve for every camera and car move
+function bezier(x1,y1,x2,y2){const cx=3*x1,bx=3*(x2-x1)-cx,ax=1-cx-bx,cy=3*y1,by=3*(y2-y1)-cy,ay=1-cy-by;
+  const sx=t=>((ax*t+bx)*t+cx)*t, sy=t=>((ay*t+by)*t+cy)*t, dx=t=>(3*ax*t+2*bx)*t+cx;
+  return x=>{let t=x;for(let i=0;i<8;i++){const e=sx(t)-x;if(Math.abs(e)<1e-5)break;const d=dx(t);if(Math.abs(d)<1e-6)break;t-=e/d;}return sy(Math.max(0,Math.min(1,t)));};}
+const legEase=bezier(0.77,0,0.175,1);
+// the beat rails: one dot per beat, the current one filled
+function buildRail(id,labels,yOf){const ul=document.getElementById(id);ul.innerHTML=labels.map((l,i)=>`<li><button type="button" aria-label="${l}" aria-current="false"><span>${l}</span></button></li>`).join("");
+  ul.querySelectorAll("button").forEach((b,i)=>b.onclick=()=>{jumpTo(yOf(i));b.blur();});return ul;}
+const heroRail=buildRail("hero-rail",HB,heroBeatY), driveRail=buildRail("drive-rail",DB,driveBeatY);
+function setRail(ul,b){ul.querySelectorAll("button").forEach((x,i)=>x.setAttribute("aria-current",i===b));}
+ScrollTrigger.create({trigger:hero,start:"top bottom",end:"bottom top",onToggle:t=>heroVisible=t.isActive});
+ScrollTrigger.create({trigger:driveEl,start:"top bottom",end:"bottom top",onToggle:t=>driveVisible=t.isActive});
+const frameHooks=[]; let lastNow=performance.now(), frameDt=1/60;
+gsap.ticker.lagSmoothing(0);   // tweens keep wall time even when a frame is slow (the map drawing tiles)
+gsap.ticker.add(()=>{const now=performance.now(); frameDt=Math.min(0.05,(now-lastNow)/1000); lastNow=now; for(const f of frameHooks) f(now);});
+function readScroll(){ScrollTrigger.refresh();}
+// the header takes the dark tokens while a dark frame (hero, map, clip) sits under it
+{const hdr=document.querySelector(".hdr"), darks=[hero,driveEl,document.getElementById("spotsec"),document.getElementById("videosec")], under=new Set();
+  let io=null; function watch(){if(io)io.disconnect();io=new IntersectionObserver(es=>{es.forEach(e=>e.isIntersecting?under.add(e.target):under.delete(e.target));hdr.classList.toggle("ondark",under.size>0);},{rootMargin:`0px 0px -${Math.max(0,innerHeight-44)}px 0px`,threshold:0});darks.forEach(d=>io.observe(d));}
+  watch(); addEventListener("resize",()=>{if(innerWidth===lastW)return;setTimeout(watch,50);});}
+if(RM){const v=document.getElementById("heroVideo"); v.autoplay=false; v.removeAttribute("autoplay"); v.pause&&v.pause();}
+
+// ---------- hero: five beats ----------
+const h1=document.getElementById("h1");
+h1.innerHTML=h1.textContent.split(" ").map(w=>`<span class="w">${w}</span>`).join(" ");
+const words=[...h1.querySelectorAll(".w")];
+const beats=[...document.querySelectorAll(".beat")], camEl=document.getElementById("cam");
+let snowHidden=false, scansReady=false;
+words.forEach((w,i)=>setTimeout(()=>w.classList.add("lit"),400+i*110));   // the question lights up word by word once, on load
+function setHeroBeat(b){
+  if(b===heroBeat) return; const fwd=b>heroBeat, anim=fwd&&!RM&&heroBeat>=0; heroBeat=b;
+  beats.forEach(x=>x.classList.toggle("back",!fwd||!anim)); beats.forEach(x=>x.classList.toggle("on",+x.dataset.beat===b));
+  document.getElementById("stage").classList.toggle("scan",b>=1);
+  if(b!==1&&snowHidden) setSnowHidden(false); document.getElementById("snowtoggle").classList.toggle("on",b===1&&scansReady); document.getElementById("snowcap").classList.toggle("on",b===1&&snowHidden);
+  setRail(heroRail,b); if(window.showScanTime) showScanTime();
+  gsap.killTweensOf(camEl); gsap.to(camEl,{opacity:b===0?1:0,duration:anim?.7:0,ease:"power2.inOut"});   // the dashcam gives way to the scan once
+  if(window.heroScene) heroScene(b,anim);
 }
-function parseInto(s, buf, bytes) {
-  const dv = new DataView(buf.buffer, buf.byteOffset, bytes), c = Math.cos(ROT), si = Math.sin(ROT);
-  for (let o = 0; o < bytes; o += 8) {
-    if (s.n >= s.cap) grow(s);
-    const i = s.n, px = dv.getInt16(o, true) / 100, py = dv.getInt16(o + 2, true) / 100;
-    s.x[i] = px * c + py * si; s.y[i] = px * si - py * c;                        // x forward (up on screen), y to the right
-    s.z[i] = dv.getInt16(o + 4, true) / 100;
-    s.br[i] = dv.getUint8(o + 6); s.sn[i] = dv.getUint8(o + 7); s.n++;
+setHeroBeat(0);
+// the clip only gets its poster and source when it is near
+new IntersectionObserver((es,obs)=>es.forEach(e=>{if(!e.isIntersecting)return;const v=e.target;v.poster=v.dataset.poster;v.src=v.dataset.src;obs.unobserve(v);}),{rootMargin:"120% 0px"}).observe(document.getElementById("clip"));
+document.getElementById("clip").addEventListener("click",e=>{const v=e.currentTarget; v.paused?v.play():v.pause();});
+if(!matchMedia("(prefers-reduced-motion: reduce)").matches) new IntersectionObserver(es=>es.forEach(e=>{const v=e.target; if(e.isIntersecting&&v.src){v.play().catch(()=>{});} else v.pause();}),{threshold:.5}).observe(document.getElementById("clip"));
+
+// ---------- guess first: the answer comes from the numbers already on the page, nothing is stored ----------
+const GUESS={here:null,typical:null};
+function answerGuess(g){
+  const here=GUESS.here; if(here===null) return;
+  document.querySelectorAll(".choices button[data-g]").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.g===g));
+  const opts=[0.5,1.5,3], nearest=opts.reduce((a,b)=>Math.abs(b-here)<Math.abs(a-here)?b:a); const close=g===nearest;
+  document.getElementById("verdict").innerHTML=`${g===here?"Right.":close?"Close.":"Not quite."} Here it was <b>${here}\u00a0m</b>; at a typical spot on the whole route, <b>${GUESS.typical}\u00a0m</b>.`;
+}
+document.querySelectorAll(".choices button[data-g]").forEach(b=>b.addEventListener("click",()=>answerGuess(+b.dataset.g)));
+addEventListener("keydown",e=>{if(heroBeat!==3||e.metaKey||e.ctrlKey||e.altKey) return; const map={"1":0.5,"2":1.5,"3":3}; if(map[e.key]!==undefined) answerGuess(map[e.key]);});
+document.getElementById("guess-skip").addEventListener("click",()=>{jumpTo(heroBeatY(4));document.activeElement.blur();});
+
+// ---------- everyday sizes beside the numbers: 0.25 m about a shoe and 3 m about a parking space are Delo's; the rest are the same kind of plain comparison
+const ABOUT={0.25:"a shoe",0.5:"two shoes end to end",0.75:"a doorway",1:"a doorway and a bit",1.25:"a kitchen table",1.5:"a bathtub",1.75:"a tall person",2:"a door laid flat",2.5:"most of a parking space",3:"a parking space, wide"};
+const about=m=>ABOUT[m]?`${m}\u00a0m is about ${ABOUT[m]}.`:"";
+// in-app browsers (LinkedIn, Instagram, Facebook) often block autoplay and WebGL: offer the real browser
+if(/LinkedInApp|Instagram|FBAN|FBAV|FB_IAB/i.test(navigator.userAgent)){root.classList.add("inapp");document.getElementById("openin").href=location.href;}
+const fmtTime=us=>new Date(us/1000).toLocaleString("en-CA",{timeZone:"America/Toronto",year:"numeric",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+function showScanTime(){document.getElementById("scantime").textContent=SCANTIME[(heroBeat===2||heroBeat===3)?"clear":"storm"];}   // beats 2 and 3 show the no-snow scan
+fetch("data/scans.json").then(r=>r.json()).then(j=>{for(const d of ["storm","clear"]) if(j[d]&&j[d].scan_time_us) SCANTIME[d]=fmtTime(j[d].scan_time_us); showScanTime();}).catch(()=>{});
+// ---------- live weather in the header (Open-Meteo, no key), separate from the study data ----------
+let liveSnow=false, flakeCount=80;
+fetch("https://api.open-meteo.com/v1/forecast?latitude=43.6532&longitude=-79.3832&current=temperature_2m,weather_code&timezone=America%2FToronto").then(r=>r.ok?r.json():null).then(j=>{
+  if(!j||!j.current) return;
+  const c=j.current.weather_code, t=Math.round(j.current.temperature_2m); if(!Number.isFinite(c)||!Number.isFinite(t)) return;
+  const words={0:"clear",1:"mostly clear",2:"partly cloudy",3:"overcast",45:"fog",48:"fog",51:"drizzle",53:"drizzle",55:"drizzle",56:"freezing drizzle",57:"freezing drizzle",61:"rain",63:"rain",65:"rain",66:"freezing rain",67:"freezing rain",71:"snowing",73:"snowing",75:"snowing",77:"snow grains",80:"showers",81:"showers",82:"showers",85:"snow showers",86:"snow showers",95:"thunderstorm",96:"thunderstorm",99:"thunderstorm"};
+  liveSnow=[71,73,75,77,85,86].includes(c);
+  const el=document.getElementById("weather"); el.innerHTML=`<span class="dot">Toronto now \u00b7 </span>${t}\u00b0C<span class="cond">, ${words[c]||"weather code "+c}</span>`; el.title="Live weather in Toronto from Open-Meteo, not part of the study"; el.hidden=false;
+  flakeCount=liveSnow?170:80;
+}).catch(()=>{});
+
+// ---------- decorative snowfall over the opening video (not data): a little heavier when it is snowing in Toronto now ----------
+(function(){
+  if(RM) return;
+  const c=document.getElementById("flakes"), g=c.getContext("2d"); let W=0,H=0,flakes=[];
+  function size(){W=c.width=c.clientWidth;H=c.height=c.clientHeight;}
+  addEventListener("resize",size); size();
+  function mk(){return {x:Math.random()*W,y:Math.random()*H,r:0.8+Math.random()*1.8,v:0.4+Math.random()*0.9,d:(Math.random()-0.5)*0.4,a:0.25+Math.random()*0.5};}
+  function tick(){
+    const want=heroBeat===0?flakeCount:0;
+    while(flakes.length<want) flakes.push(mk()); if(flakes.length>want) flakes.length=want;
+    g.clearRect(0,0,W,H); g.fillStyle="#ffffff";
+    for(const f of flakes){f.y+=f.v;f.x+=f.d;if(f.y>H){f.y=-4;f.x=Math.random()*W;} g.globalAlpha=f.a; g.beginPath(); g.arc(f.x,f.y,f.r,0,6.283); g.fill();}
+    g.globalAlpha=1;
   }
-}
-/* the scan streams in: the file is a random sample, so the first bytes are a thin, even layer and the rest refines it */
-async function streamScan(name, onChunk) {
-  const r = await fetch('data/scan_' + name + '.bin');
-  const len = Number(r.headers.get('content-length')) || 0;
-  const s = newScan(len ? Math.ceil(len / 8) : 200000);
-  scans[name] = s;
-  if (!r.body) { const buf = new Uint8Array(await r.arrayBuffer()); parseInto(s, buf, buf.length - buf.length % 8); s.done = true; onChunk(s); return s; }
-  const rd = r.body.getReader(); let rest = new Uint8Array(0);
-  for (;;) {
-    const { value, done } = await rd.read(); if (done) break;
-    let buf = value;
-    if (rest.length) { const m = new Uint8Array(rest.length + value.length); m.set(rest); m.set(value, rest.length); buf = m; }
-    const full = buf.length - buf.length % 8;
-    parseInto(s, buf, full); rest = buf.slice(full);
-    onChunk(s);
-  }
-  s.done = true; onChunk(s); return s;
-}
-async function loadCar() {
-  const buf = await (await fetch('data/car.bin')).arrayBuffer();
-  const n = 4736, pos = new Float32Array(buf, 0, n * 9), nrm = new Float32Array(buf, n * 36, n * 9);
-  const order = [...Array(n).keys()].sort((a, b) => (pos[a * 9 + 2] + pos[a * 9 + 5] + pos[a * 9 + 8]) - (pos[b * 9 + 2] + pos[b * 9 + 5] + pos[b * 9 + 8]));   // roof last
-  return { n, pos, nrm, order };
-}
-const stamp = us => { const d = new Date(us / 1000); const p = v => String(v).padStart(2, '0'); return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())} UTC`; };
-
-/* ---------- view ---------- */
-const V = { w: 0, h: 0, dpr: 1, wide: false, cx: 0, cy: 0, cyClose: 0, ppmWide: 12, ppmClose: 28, step: 1, scanx: 540 };
-function measure() {
-  V.w = innerWidth; V.h = stage.clientHeight; V.wide = V.w >= 1000;
-  V.dpr = POSTER ? 1 : Math.min(V.wide ? 2 : 1.5, devicePixelRatio || 1);
-  V.ppmWide = V.wide ? Math.max(12, Math.min(16, V.w / 96)) : V.w / 24;          // phone: 24 m across
-  V.ppmClose = V.wide ? V.ppmWide * 2 : V.w / 20;                                 // the push: twice as close on desktop, 20 m across on a phone
-  V.cx = V.wide ? (V.scanx + V.w) / 2 : V.w / 2;
-  V.cy = V.wide ? V.h / 2 + 30 : V.h * 0.45;
-  V.cyClose = V.wide ? V.h / 2 + 10 : V.h * 0.31;
-  if (POSTER) { V.ppmWide = 16; V.cx = V.w / 2; V.cy = V.h / 2; }
-  V.step = POSTER ? 1 : Math.max(1, Math.floor(200000 / POINTS));
-  if (!V.wide && V.step > 2) V.step = 2;                                          // a phone shows a 24 m strip, so every second point in it is drawn
-  canvas.width = Math.round(V.w * V.dpr); canvas.height = Math.round(V.h * V.dpr);
-}
-function toPx(x, y, ppm, cy = V.cy) { return [V.cx + y * ppm, cy - x * ppm]; }
-
-/* ---------- layers: one pre-rendered picture per scan, scale and kind (solid or snow). Drawn in slices so no task runs long. ---------- */
-const SPEC = { sw: ['storm', false, false, 0], nw: ['storm', false, true, 1], cw: ['clear', false, false, 2], cnw: ['clear', false, true, 3], sc: ['storm', true, false, 4], nc: ['storm', true, true, 5] };
-function newLayer(key) {
-  const [src, close, snow, idx] = SPEC[key];
-  const c = document.createElement('canvas'); c.width = canvas.width; c.height = canvas.height;
-  const cc = c.getContext('2d'), img = cc.createImageData(c.width, c.height);
-  return { key, src, close, snow, idx, ppm: close ? V.ppmClose : V.ppmWide, cy: close ? V.cyClose : V.cy, c, cc, img, d: img.data, fed: 0, dirty: false };
-}
-function feed(L, s, to) {
-  const d = L.d, W = L.c.width, H = L.c.height, k = V.dpr, step = L.close ? 1 : V.step, snow = L.snow, ppm = L.ppm, cy = L.cy;
-  const pxS = L.close ? (k > 1.4 ? 3 : 2) : ((!V.wide || k > 1.4) && !POSTER ? 2 : 1), pxN = k > 1.4 || !V.wide ? 2 : 1;   // phone: 2 px snow points, so the pale haze reads as it does at 1440
-  const boostN = 1, boostS = L.close ? (V.wide ? 1.4 : 1) : 1.2;   // wide: the same alpha on every size (the phone's 1.8 of fix pass 1 lit the storm's unflagged specks like snow)
-  const nearRoad = L.src === 'storm' && !L.close && !snow;                // the storm's unflagged return on the road around the car (within 10 m to the side, 26 m ahead and behind) is drawn at the road end of the legend, so the kerbs, walls and trees carry the no-snow frame
-  const put = (ix, iy, r, g, b, a, px) => {
-    for (let dy = 0; dy < px; dy++) for (let dx = 0; dx < px; dx++) {
-      const X = ix + dx, Y = iy + dy; if (X < 0 || Y < 0 || X >= W || Y >= H) continue;
-      const i = (Y * W + X) * 4;
-      d[i] = Math.min(205, d[i] + r * a); d[i + 1] = Math.min(212, d[i + 1] + g * a); d[i + 2] = Math.min(222, d[i + 2] + b * a);
-      d[i + 3] = Math.min(255, d[i + 3] + 255 * a);
-    }
-  };
-  let i = L.fed; if (step > 1) i += (step - i % step) % step;
-  for (; i < to; i += step) {
-    if (!!s.sn[i] !== snow) continue;
-    const X = V.cx + s.y[i] * ppm, Y = cy - s.x[i] * ppm;
-    if (X < -2 || Y < -2 || X > V.w + 2 || Y > V.h + 2) continue;
-    const ix = Math.round(X * k), iy = Math.round(Y * k);
-    if (snow) { put(ix, iy, 185, 202, 219, Math.min(1, 0.55 * boostN), pxN); continue; }
-    const t = nearRoad && (s.x[i] / 26) ** 2 + (s.y[i] / 10) ** 2 < 1 ? 0 : Math.max(0, Math.min(1, (s.z[i] + 0.3) / 3.3));   // road dim, 3 m up full
-    const b = s.br[i] / 255;
-    put(ix, iy, 70 + t * 130, 80 + t * 130, 96 + t * 126, Math.min(1, (0.13 + t * 0.27 + b * 0.08) * boostS), pxS);
-  }
-  L.fed = to; L.dirty = true;
-}
-const jobs = []; let pumpQueued = false;
-function schedule() { if (!pumpQueued) { pumpQueued = true; requestAnimationFrame(pump); } }
-function pump() {
-  pumpQueued = false;
-  const t0 = performance.now(); let any = false, visible = false, more = false;
-  for (const j of jobs) {
-    const s = scans[j.L.src]; if (!s) continue;
-    while (j.L.fed < s.n && performance.now() - t0 < 10) { feed(j.L, s, Math.min(s.n, j.L.fed + 15000)); any = true; }
-    if (j.L.fed < s.n) more = true;
-  }
-  for (const j of jobs) if (j.L.dirty) { j.L.cc.putImageData(j.L.img, 0, 0); j.L.dirty = false; if (state.cur[j.L.idx] > 0.004) visible = true; }
-  for (let i = jobs.length - 1; i >= 0; i--) { const s = scans[jobs[i].L.src]; if (s && s.done && jobs[i].L.fed >= s.n) { const j = jobs.splice(i, 1)[0]; if (j.onDone) j.onDone(); } }
-  if (any && visible && !state.anim) { drawFrame(); firstDrawn = true; }
-  if (more) schedule();
-}
-function queue(key, onDone) {
-  if (state.layers[key]) { if (onDone) onDone(); return state.layers[key]; }
-  const L = state.layers[key] = newLayer(key);
-  jobs.push({ L, onDone }); schedule(); return L;
-}
-function ensure(key) {                                     // a layer needed now: keep the pump on it (about 10 ms a frame); a part-fed layer is drawn thinner and fills in over the next frames, never in one long frame
-  const L = queue(key), s = scans[L.src]; if (!s) return L;
-  if (L.fed < s.n) schedule();
-  return L;
-}
-/* heavy canvas work off the pinned stage (the try-it panels, the ending's figure) runs as generators, at most about 8 ms a frame */
-const sliced = new Map(); let slicedQueued = false;
-function runSliced(key, gen) { sliced.set(key, gen); if (!slicedQueued) { slicedQueued = true; requestAnimationFrame(pumpSliced); } }
-function pumpSliced() {
-  slicedQueued = false; const t0 = performance.now();
-  for (const [key, g] of sliced) {
-    let r = g.next(); while (!r.done && performance.now() - t0 < 8) r = g.next();
-    if (r.done) sliced.delete(key);
-    if (performance.now() - t0 >= 8) break;
-  }
-  if (sliced.size) { slicedQueued = true; requestAnimationFrame(pumpSliced); }
-}
-
-/* ---------- states: each a complete picture ---------- */
-/* [storm solid wide, storm snow wide, clear solid wide, clear snow wide, storm solid close, storm snow close, zoom, band, grid, car] */
-const STATES = {
-  hero:   [1.00, 0.60, 0, 0, 0, 0, 0, 0, 1, 1],
-  snow:   [1.00, 1.00, 0, 0, 0, 0, 0, 0, .5, 1],                  // the structure at full, as in b2b: b2b is this picture minus the snow layer
-  nosnow: [1.00, 0.00, 0, 0, 0, 0, 0, 0, 1, 1],
-  clear:  [0, 0, 1.00, 0.55, 0, 0, 0, 0, 1, 1],
-  push:   [0, 0, 0, 0, 1.00, 0.22, 1, 1, 1, 1],
-  try:    [0.12, 0.06, 0, 0, 0, 0, 0, 0, .25, 0],
-  result: [0.26, 0.08, 0, 0, 0, 0, 0, 0, .2, 0],
-};
-const NEED = { hero: ['sw', 'nw'], snow: ['sw', 'nw'], nosnow: ['sw'], clear: ['cw', 'cnw'], push: ['sc', 'nc'], try: ['sw', 'nw'], result: ['sw', 'nw'] };
-const state = { cur: STATES.hero.slice(), from: null, to: null, t0: 0, name: 'hero', layers: {}, anim: 0, visible: true };
-let route = null, car = null, hero = null;
-
-function drawCar(ppm, alpha, outline = 0) {
-  if (alpha <= 0.004) return;
-  if (outline > 0.004) {                                                       // the push: the car as a thin outline at true size, nothing filled
-    ctx.globalAlpha = alpha * outline; ctx.strokeStyle = 'rgba(238,241,245,.95)'; ctx.lineWidth = 1.25;
-    ctx.beginPath(); ctx.roundRect(-1.0 * ppm, -2.4 * ppm, 2.0 * ppm, 4.8 * ppm, 0.3 * ppm); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(-0.9 * ppm, -0.9 * ppm); ctx.lineTo(0.9 * ppm, -0.9 * ppm); ctx.stroke();   // the windscreen line marks the front
-    ctx.globalAlpha = 1;
-  }
-  alpha *= 1 - outline;
-  if (alpha <= 0.004) return;
-  ctx.globalAlpha = alpha;
-  ctx.fillStyle = 'rgba(0,0,0,.3)';                                            // a flat ground band under the car, no ring, no glow
-  ctx.beginPath(); ctx.ellipse(0, 0, 1.2 * ppm, 2.7 * ppm, 0, 0, Math.PI * 2); ctx.fill();
-  paintCarMesh(ctx, ppm);
-  ctx.globalAlpha = 1;
-}
-function paintCarMesh(g, ppm) {                                                // the car, solid and softly shaded, at the origin of g's transform (the stage and the ending's figure); its footprint until the mesh lands
-  if (!car) { g.fillStyle = 'rgb(118,126,140)'; g.beginPath(); g.roundRect(-1.0 * ppm, -2.4 * ppm, 2.0 * ppm, 4.8 * ppm, 0.3 * ppm); g.fill(); return; }
-  const { pos, nrm, order } = car;
-  for (const t of order) {
-    const o = t * 9, nz = Math.max(0, nrm[o + 2]), ny = nrm[o + 1];
-    const l = 0.42 + nz * 0.36 + ny * 0.06;                                    // soft shading: a solid car, not a textured slab
-    g.fillStyle = `rgb(${Math.round(40 + l * 150)},${Math.round(46 + l * 150)},${Math.round(56 + l * 150)})`;
-    g.beginPath();
-    g.moveTo(pos[o + 1] * ppm, -pos[o] * ppm); g.lineTo(pos[o + 4] * ppm, -pos[o + 3] * ppm); g.lineTo(pos[o + 7] * ppm, -pos[o + 6] * ppm);
-    g.closePath(); g.fill();
-  }
-}
-
-function drawFrame() {
-  if (tier <= 1) return;
-  const [sw, nw, cw, cnw, sc, nc, zoom, band, grid, carA] = state.cur, L = state.layers;
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.fillStyle = `rgb(${BG.join(',')})`; ctx.fillRect(0, 0, canvas.width, canvas.height);
-  const ppm = V.ppmWide + (V.ppmClose - V.ppmWide) * zoom, cy = V.cy + (V.cyClose - V.cy) * zoom;
-  if (grid > 0.004) {                                                          // the 10 m grid under everything
-    ctx.setTransform(V.dpr, 0, 0, V.dpr, 0, 0);
-    ctx.strokeStyle = `rgba(255,255,255,${(0.07 * grid).toFixed(3)})`; ctx.lineWidth = 1;
-    const g = 10 * ppm;
-    for (let x = V.cx % g; x < V.w; x += g) { ctx.beginPath(); ctx.moveTo(Math.round(x) + .5, 0); ctx.lineTo(Math.round(x) + .5, V.h); ctx.stroke(); }
-    for (let y = cy % g; y < V.h; y += g) { ctx.beginPath(); ctx.moveTo(0, Math.round(y) + .5); ctx.lineTo(V.w, Math.round(y) + .5); ctx.stroke(); }
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-  }
-  const draw = (c, a) => { if (!c || a <= 0.004) return; ctx.globalAlpha = a; ctx.drawImage(c.c, 0, 0); };
-  draw(L.sw, sw); draw(L.nw, nw); draw(L.cw, cw); draw(L.cnw, cnw); draw(L.sc, sc); draw(L.nc, nc);
-  ctx.globalAlpha = 1;
-  ctx.setTransform(V.dpr, 0, 0, V.dpr, 0, 0);
-  ctx.translate(V.cx, cy);
-  if (band > 0.004) {                                                          // the push: two thin outlines flat on the road, at true scale
-    ctx.globalAlpha = band;
-    ctx.strokeStyle = 'rgba(217,163,90,.95)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, 0, 1.5 * ppm, 0, Math.PI * 2); ctx.stroke();
-    ctx.strokeStyle = 'rgba(233,238,244,.6)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(0, 0, 3 * ppm, 0, Math.PI * 2); ctx.stroke();
-    ctx.globalAlpha = 1;
-  }
-  drawCar(ppm, carA, band);
-}
-
-function setState(name, forward) {
-  state.name = name;
-  if (tier > 1) for (const k of NEED[name]) ensure(k);
-  state.from = state.cur.slice(); state.to = STATES[name]; state.t0 = performance.now();
-  cancelAnimationFrame(state.anim); state.anim = 0;
-  const dur = forward ? MOVE : 0;                                     // backward: the end state at once
-  const step = now => {
-    const t = dur ? Math.min(1, (now - state.t0) / dur) : 1, e = easeInOut(t);
-    for (let k = 0; k < 10; k++) state.cur[k] = state.from[k] + (state.to[k] - state.from[k]) * e;
-    drawFrame();
-    state.anim = t < 1 ? requestAnimationFrame(step) : 0;
-  };
-  state.anim = requestAnimationFrame(step);
-  $('pin-lidar').classList.toggle('on', name === 'hero');
-  $('pin-cam').classList.toggle('on', name === 'hero');
-  ['pin-snow', 'pin-road'].forEach(id => $(id).classList.toggle('on', name === 'snow'));
-  $('pin-car').classList.toggle('on', name === 'hero' || name === 'snow');
-  ['pin-r1', 'pin-r2'].forEach(id => $(id).classList.toggle('on', name === 'push'));
-  stage.classList.toggle('dim', name === 'try');
-  stage.classList.toggle('result', name === 'result');
-  stage.classList.toggle('push', name === 'push');
-  $('where').textContent = name === 'clear' ? 'North Toronto, 19 Jan 2021, no snow falling' : 'North Toronto, 26 Jan 2021, snowstorm';
-}
-
-/* ---------- pins ---------- */
-function placeStatic() {
-  const put = (id, x, y, right) => { const el = $(id); el.style.left = x + 'px'; el.style.top = y + 'px'; if (right !== undefined) el.classList.toggle('r', right); };
-  // tier 0 shows the poster, whose car sits at (fxF, fyF) at sF px per metre (the same as the stage on a phone); the two static pins follow it there
-  const fb = tier <= 1, sF = V.wide ? Math.max(V.w, V.h) / 1440 * 16 : V.w / 24, fxF = V.wide ? V.w / 2 + V.w * 0.2 : V.w / 2, fyF = V.wide ? V.h / 2 : V.h * 0.45;
-  const cx0 = fb ? fxF : V.cx, cy0 = fb ? fyF : V.cy, ppm0 = fb ? sF : V.ppmWide;
-  put('pin-car', cx0 - 1.0 * ppm0 - 14, cy0);
-  put('pin-lidar', cx0 + 1.0 * ppm0 + 14, cy0 - 4 * ppm0, false);
-  const c = V.ppmClose, q = Math.SQRT1_2;
-  $('pin-r2').classList.toggle('up', !V.wide);
-  if (V.wide) {
-    put('pin-r1', V.cx + 1.5 * c * q + 12, V.cyClose + 1.5 * c * q + 2, false);
-    put('pin-r2', V.cx - 3 * c * q - 12, V.cyClose - 3 * c * q - 4, true);
-  } else {
-    put('pin-r1', V.cx + 1.5 * c * 0.94 + 12, V.cyClose + 1.5 * c * 0.34 + 2, false);
-    put('pin-r2', V.cx, V.cyClose - 3 * c - 11, false);
-  }
-  const cam = $('cam'), tie = $('tie');                                // the tie from the dashcam frame to the car
-  const r = cam.getBoundingClientRect(), lr = cam.parentElement.getBoundingClientRect();
-  const top = r.bottom - lr.top, bottom = V.cy - 2.4 * V.ppmWide - 4;
-  if (V.wide) cam.style.left = (V.cx - r.width / 2) + 'px';
-  tie.style.left = V.cx + 'px';                                        // the tie runs down the car's centre line on every size and ends on the car's top edge
-  // the camera's label, on dark ground like the other pins. Desktop: beside the photo at its bottom left corner, its dot on the photo's edge; when that would sit within 16 px of the text column (1440), under the photo's left corner instead, its dot on the photo's bottom edge. Phone: hung from the tie's start under the photo, its dot where the tie starts; the tie continues below the label so no line crosses the words.
-  const pc = $('pin-cam'), camLeft = V.cx - r.width / 2, pw = pc.offsetWidth, ph = pc.offsetHeight;
-  const colRight = (document.querySelector('#b1 .text').getBoundingClientRect().right - lr.left);
-  const under = !V.wide || camLeft - 14 - pw < colRight + 16;
-  pc.classList.toggle('r', !under); pc.classList.toggle('dn', under);
-  let tieTop = top;
-  if (!under) put('pin-cam', camLeft - 14, top - 12);
-  else if (V.wide) put('pin-cam', camLeft + pw / 2, top + 14);
-  else { put('pin-cam', V.cx, top + 14); tieTop = top + 14 + ph + 6; }
-  tie.style.top = tieTop + 'px'; tie.style.height = Math.max(0, bottom - tieTop) + 'px';
-  if (!V.wide && !fb) {                                                // phone: the lidar label beside the tie, 14 px off it, halfway down; to its left if it would not fit
-    const pl = $('pin-lidar'), lw = pl.offsetWidth, ly = (tieTop + bottom) / 2;
-    if (V.cx + 14 + 11 + lw <= V.w - 20) put('pin-lidar', V.cx + 14 + 11, ly, false); else put('pin-lidar', V.cx - 14 - 11, ly, true);
-  }
-  // the tier-0 fallback: the push outlines over the poster (a 1440 px square at 16 px per metre; cover on desktop, the phone shows 24 m across with the car at 45 percent)
-  const s = V.wide ? Math.max(V.w, V.h) / 1440 * 16 : V.w / 24, fx = V.wide ? V.w / 2 + V.w * 0.2 : V.w / 2, fy = V.wide ? V.h / 2 : V.h * 0.45;
-  $('pushfb').setAttribute('viewBox', `0 0 ${V.w} ${V.h}`);
-  const F = 'Familjen Grotesk, Familjen Fallback, sans-serif', lh = Math.round(LABEL * 1.3), cw = LABEL * 0.46;
-  const pin = (x, y, anchor, l1, l2, c1) => {                           // two lines with the page-colour backing of the main pins; (x, y) is the text's edge at the block's middle
-    const w = Math.max(l1.length, l2.length) * cw + 14, x0 = anchor === 'end' ? x - w : anchor === 'middle' ? x - w / 2 : x;
-    return `<rect x="${x0.toFixed(1)}" y="${(y - lh - 3).toFixed(1)}" width="${w.toFixed(1)}" height="${lh * 2 + 6}" rx="4" fill="rgba(10,13,18,.84)"/>` +
-      `<text x="${x.toFixed(1)}" y="${(y - 5).toFixed(1)}" fill="${c1}" font-size="${LABEL}" text-anchor="${anchor}" font-family="${F}">${l1}</text>` +
-      `<text x="${x.toFixed(1)}" y="${(y + lh - 5).toFixed(1)}" fill="#bcc4ce" font-size="${LABEL}" text-anchor="${anchor}" font-family="${F}">${l2}</text>`;
-  };
-  const dy = V.wide ? 1 : -1;                                                                         // phone: the label sits above right, clear of the words under the ring
-  const d1 = [fx + 1.5 * s * q, fy + 1.5 * s * q * dy], t1 = [fx + 3 * s * q + 16, fy + (3 * s * q + 8) * dy];   // the 1.5 m dot on its ring, the words outside the 3 m ring, a leader between
-  $('pushfb').innerHTML = `<circle cx="${fx}" cy="${fy}" r="${1.5 * s}" fill="rgba(217,163,90,.10)" stroke="rgba(217,163,90,.95)" stroke-width="1.5"/><circle cx="${fx}" cy="${fy}" r="${3 * s}" fill="none" stroke="rgba(233,238,244,.6)" stroke-width="1"/>` +
-    `<line x1="${d1[0].toFixed(1)}" y1="${d1[1].toFixed(1)}" x2="${(t1[0] - 6).toFixed(1)}" y2="${t1[1].toFixed(1)}" stroke="rgba(255,255,255,.45)" stroke-width="1"/><circle cx="${d1[0].toFixed(1)}" cy="${d1[1].toFixed(1)}" r="3" fill="#d9a35a"/>` +
-    pin(t1[0], t1[1], 'start', '1.5 m', 'in the storm', '#d9a35a') +
-    (V.wide ? `<circle cx="${(fx - 3 * s * q).toFixed(1)}" cy="${(fy - 3 * s * q).toFixed(1)}" r="3" fill="#eef1f5"/>` + pin(fx - 3 * s * q - 14, fy - 3 * s * q, 'end', '3 m+', 'a week earlier, no snow', '#eef1f5')
-            : `<circle cx="${fx}" cy="${(fy - 3 * s).toFixed(1)}" r="3" fill="#eef1f5"/>` + pin(fx, fy - 3 * s - 14 - lh, 'middle', '3 m+', 'a week earlier, no snow', '#eef1f5'));
-}
-function placeData(s) {
-  const nearest = (tx, ty, test) => {
-    let best = -1, bd = 1e9;
-    for (let i = 0; i < s.n; i += 3) { if (!test(i)) continue; const d = (s.x[i] - tx) ** 2 + (s.y[i] - ty) ** 2; if (d < bd) { bd = d; best = i; } }
-    return best;
-  };
-  const fwd = V.wide ? 9 : 8, left = V.wide ? 9 : 5;
-  const si = nearest(fwd, left, i => s.sn[i] && s.z[i] > 0.5);
-  const ri = nearest(-5, -3.5, i => !s.sn[i] && s.z[i] < 0.15 && s.z[i] > -0.2);
-  const put = (id, x, y, right) => { const el = $(id); el.style.left = x + 'px'; el.style.top = y + 'px'; if (right !== undefined) el.classList.toggle('r', right); };
-  const beside = (id, x, y) => { const w = $(id).offsetWidth; const flip = x + 14 + w > V.w - 20; put(id, flip ? x - 14 : x + 14, y, flip); };
-  let p = si >= 0 ? toPx(s.x[si], s.y[si], V.ppmWide) : [V.cx + 40, V.cy - 80]; beside('pin-snow', p[0], p[1]);
-  p = ri >= 0 ? toPx(s.x[ri], s.y[ri], V.ppmWide) : [V.cx - 50, V.cy + 60]; beside('pin-road', p[0], p[1]);
-  if (V.wide) {                                                          // desktop: the lidar label sits on a wall or kerb, not on the car. Phone: it stays beside the tie (placeStatic)
-    const li = nearest(-7, -9, i => !s.sn[i] && s.z[i] > 0.8);
-    p = li >= 0 ? toPx(s.x[li], s.y[li], V.ppmWide) : [V.cx - 60, V.cy + 70]; beside('pin-lidar', p[0], p[1]);
-  }
-}
-
-/* ---------- beat 4: the ten marks ---------- */
-function buildMarks() {
-  $('marks').innerHTML = route.sizes_m.map((m, i) => `<div class="${hero.storm_ok[i] >= 7 ? '' : 'lost'}${m === 1.5 ? ' at' : ''}"><i></i><b>${m}</b></div>`).join('');
-}
-
-/* ---------- beat 5: try it. Spot A is the hero spot of beat 4 (index 41, 003_005). ---------- */
-const TRY = [41, 90, 117];
-let tryIdx = 0, pushIdx = 5, tryArmed = false;
-const tryCv = { storm: $('cv-try-storm'), clear: $('cv-try-clear') }, tryImg = { storm: null, clear: null }, tryPix = {};
-const tryPpm = (W, H) => Math.min(W, H) / (V.wide ? 20 : 7);                 // pixels per metre: 20 m across the short side on desktop, 7 m on the phone (the 3 m ring always fits)
-function srcPixels(im) {                                                     // the per-spot image (400 px for 32 m) read once as pixels
-  if (tryPix[im.src]) return tryPix[im.src];
-  const c = document.createElement('canvas'); c.width = 400; c.height = 400;
-  const g = c.getContext('2d'); g.drawImage(im, 0, 0, 400, 400);
-  return tryPix[im.src] = g.getImageData(0, 0, 400, 400).data;
-}
-function pointPainter(g, W, H, px) {                                       // additive dots into an ImageData, as the stage layers do
-  const img = g.createImageData(W, H), d = img.data;
-  const put = (ix, iy, r, gg, b, a) => {
-    for (let dy = 0; dy < px; dy++) for (let dx = 0; dx < px; dx++) {
-      const X = ix + dx, Y = iy + dy; if (X < 0 || Y < 0 || X >= W || Y >= H) continue;
-      const i = (Y * W + X) * 4;
-      d[i] = Math.min(215, d[i] + r * a); d[i + 1] = Math.min(220, d[i + 1] + gg * a); d[i + 2] = Math.min(228, d[i + 2] + b * a); d[i + 3] = 255;
-    }
-  };
-  const scan = (s, ppm, cx, cy, boost = 1, from = 0, to = s.n) => {         // thin points coloured by height, snow pale; a range so a job can run in slices
-    for (let i = from; i < to; i++) {
-      const X = cx + s.y[i] * ppm, Y = cy - s.x[i] * ppm;
-      if (X < -2 || Y < -2 || X > W + 2 || Y > H + 2) continue;
-      const ix = Math.round(X), iy = Math.round(Y);
-      if (s.sn[i]) { put(ix, iy, 185, 202, 219, Math.min(1, 0.5 * boost)); continue; }
-      const t = Math.max(0, Math.min(1, (s.z[i] + 0.3) / 3.3)), b = s.br[i] / 255;
-      put(ix, iy, 70 + t * 130, 80 + t * 130, 96 + t * 126, Math.min(1, (0.26 + t * 0.44 + b * 0.1) * boost));
-    }
-  };
-  return { put, scan, done: () => g.putImageData(img, 0, 0) };
-}
-function drawTryPanel(kind) {
-  const cv = tryCv[kind], r = cv.parentElement.getBoundingClientRect(); if (!r.width || !r.height) return;
-  const k = Math.min(2, devicePixelRatio || 1), W = Math.round(r.width * k), H = Math.round(r.height * k);
-  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
-  const g = cv.getContext('2d'), ppm = tryPpm(W, H), cx = W / 2, cy = H / 2, px = k > 1.4 ? 2 : 1;
-  const size = () => { if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; } };   // sized just before the picture lands, so the old one stays up until then
-  const s = scans[kind];
-  if (tryIdx === 0 && s && s.n) {                                            // spot A is the hero spot: drawn from the thin-point data, coloured by height as on the stage
-    const P = pointPainter(g, W, H, px), n = s.n;
-    runSliced('try-' + kind, (function* () { for (let i = 0; i < n; i += 20000) { P.scan(s, ppm, cx, cy, 1, i, Math.min(n, i + 20000)); yield; } size(); P.done(); })());
-    return;
-  }
-  const im = tryImg[kind]; if (!im || !im.complete || !im.naturalWidth) { sliced.delete('try-' + kind); size(); g.fillStyle = '#000'; g.fillRect(0, 0, W, H); return; }
-  runSliced('try-' + kind, (function* () {
-    const src = srcPixels(im), sc = ppm / (400 / 32);                         // every lit source pixel becomes one dot at device resolution, not a blurred upscale
-    const Q = pointPainter(g, W, H, px), jit = Math.max(0, sc - 1) * 0.5;    // each dot lands somewhere inside its 8 cm source pixel, so no lattice shows
-    for (let sy = 0; sy < 400; sy++) {
-      for (let sx = 0; sx < 400; sx++) {
-        const l = src[(sy * 400 + sx) * 4]; if (l < 12) continue;
-        const h = (sx * 73856093 ^ sy * 19349663) >>> 0, jx = ((h & 255) / 255 - 0.5) * jit, jy = (((h >> 8) & 255) / 255 - 0.5) * jit;
-        const X = cx + (sx - 199.5) * sc + jx, Y = cy + (sy - 199.5) * sc + jy;
-        if (X < -2 || Y < -2 || X > W + 2 || Y > H + 2) continue;
-        Q.put(Math.round(X), Math.round(Y), 190, 198, 210, Math.min(1, l / 255 * 2.0));
-      }
-      if (sy % 40 === 39) yield;
-    }
-    size(); Q.done();
-  })());
-}
-function drawTry() { drawTryPanel('storm'); drawTryPanel('clear'); }
-function buildTry() {
-  for (const kind of ['storm', 'clear']) { const im = new Image(); im.onload = () => drawTryPanel(kind); tryImg[kind] = im; }
-  $('spots').innerHTML = TRY.map((n, i) => `<button type="button" aria-pressed="${i === 0}" data-i="${i}" aria-label="Spot ${['A', 'B', 'C'][i]}">${['A', 'B', 'C'][i]}</button>`).join('');
-  $('sizes').innerHTML = route.sizes_m.map((m, i) => `<button type="button" aria-pressed="${i === pushIdx}" data-i="${i}" aria-label="${m} m">${m}</button>`).join('');
-  $('spots').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; tryIdx = +b.dataset.i; [...$('spots').children].forEach(x => x.setAttribute('aria-pressed', x === b)); updateTry(); });
-  $('sizes').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; pushIdx = +b.dataset.i; [...$('sizes').children].forEach(x => x.setAttribute('aria-pressed', x === b)); updateTry(); });
-  updateTry();
-}
-function ring(svg, m, cls) {                                            // the push ring at true scale, with eight thin neutral ticks, one per direction (route.json records how many came back, not which, so none is filled; the count line carries the result)
-  const r = svg.getBoundingClientRect(), W = r.width || 300, H = r.height || 200, rad = m * tryPpm(W, H);
-  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  let s = `<circle cx="${W / 2}" cy="${H / 2}" r="${rad.toFixed(1)}" fill="none" stroke="${cls}" stroke-width="1" stroke-opacity=".9"/>`;
-  for (let i = 0; i < 8; i++) {
-    const a = i * Math.PI / 4, c = Math.cos(a), sn = Math.sin(a);
-    s += `<line x1="${(W / 2 + c * (rad - 4)).toFixed(1)}" y1="${(H / 2 + sn * (rad - 4)).toFixed(1)}" x2="${(W / 2 + c * (rad + 4)).toFixed(1)}" y2="${(H / 2 + sn * (rad + 4)).toFixed(1)}" stroke="#8a929e" stroke-width="1"/>`;
-  }
-  svg.innerHTML = s;
-}
-function updateTry() {
-  const s = route.spots[TRY[tryIdx]], m = route.sizes_m[pushIdx];
-  if (tryArmed) {
-    for (const kind of ['storm', 'clear']) { const src = new URL(s[kind + '_lidar'], location.href).href; if (tryImg[kind].src !== src) tryImg[kind].src = src; }
-    drawTry();
-  }
-  ring($('ov-storm'), m, s.storm_ok[pushIdx] >= 7 ? '#d9a35a' : '#8a929e');
-  ring($('ov-clear'), m, s.clear_ok[pushIdx] >= 7 ? '#e9eef4' : '#8a929e');
-  $('cap-storm').innerHTML = `In the storm, <b>${s.storm_ok[pushIdx]} of 8 came back</b> from ${m} m`;
-  $('cap-clear').innerHTML = `No snow a week earlier, <b>${s.clear_ok[pushIdx]} of 8 came back</b>`;
-}
-
-/* ---------- beat 6: the loop drawn twice as bars ---------- */
-function drawBars() {
-  const spots = route.spots, dpr = Math.min(2, devicePixelRatio || 1);
-  const draw = (id, key, color, cutColor) => {
-    const cv = $(id), rect = cv.parentElement.getBoundingClientRect();
-    if (!rect.width) return;
-    const W = Math.round(rect.width * dpr), H = Math.round(rect.height * dpr);
-    cv.width = W; cv.height = H;
-    const g = cv.getContext('2d'); g.clearRect(0, 0, W, H);
-    const n = spots.length, w = W / n, gap = Math.min(w * 0.3, 1.5 * dpr);
-    for (let i = 0; i < n; i++) {
-      const v = spots[i][key], cut = key === 'storm_m' && spots[i].storm_m < spots[i].clear_m;
-      const h = v === 0 ? Math.max(2 * dpr, H * 0.04) : (v / 3) * H;
-      g.fillStyle = cut ? cutColor : (v === 0 ? '#4a515b' : color);          // every cut spot is amber, even a 0 m stub; grey is 0 m and not cut
-      g.globalAlpha = v === 0 ? 1 : 0.5 + 0.5 * (v / 3);
-      if (key === 'storm_m') g.fillRect(i * w + gap / 2, 0, Math.max(w - gap, 0.8 * dpr), h);
-      else g.fillRect(i * w + gap / 2, H - h, Math.max(w - gap, 0.8 * dpr), h);
-    }
-  };
-  draw('cv-clear', 'clear_m', '#e9eef4', '#e9eef4');
-  draw('cv-storm', 'storm_m', '#aeb6c1', '#d9a35a');
-  $('typ-storm').style.top = (route.storm_median_m / 3 * 100) + '%';
-  const sp = $('typ-storm').firstElementChild, sh = $('cv-storm').parentElement.getBoundingClientRect().height;
-  sp.style.top = innerWidth < 1000 ? (sh * (1 - route.storm_median_m / 3) + 4).toFixed(1) + 'px' : '';   // phone: just under the strip; desktop: the stylesheet's place beside the line
-}
-
-/* ---------- beat 7: the loop. North up on the phone; on desktop turned a quarter so it fills the right two thirds. ---------- */
-function drawLoop() {
-  const svg = $('loop'), r = svg.getBoundingClientRect();
-  const W = r.width || innerWidth, H = r.height || innerHeight;
-  const lat0 = 43.79, kx = 111320 * Math.cos(lat0 * Math.PI / 180), ky = 110574;
-  const wide = innerWidth >= 1000;
-  const M = wide ? p => [p[1], p[0]] : p => [p[0], -p[1]];              // desktop: north to the right, east down. Phone: north up.
-  const pts = route.route.map(p => M([(p[1] + 79.47) * kx, (p[0] - 43.79) * ky]));
-  const sp = route.spots.map(s => M([(s.lon + 79.47) * kx, (s.lat - 43.79) * ky]));
-  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
-  const minx = Math.min(...xs), maxx = Math.max(...xs), miny = Math.min(...ys), maxy = Math.max(...ys);
-  const padL = wide ? V.scanx : 20, padR = wide ? 48 : 20, padT = 84, padB = wide ? 48 : H * 0.36;
-  const k = Math.min((W - padL - padR) / (maxx - minx), (H - padT - padB) / (maxy - miny));
-  const ox = padL + ((W - padL - padR) - (maxx - minx) * k) / 2, oy = padT + ((H - padT - padB) - (maxy - miny) * k) / 2;
-  const P = p => [ox + (p[0] - minx) * k, oy + (p[1] - miny) * k];
-  const d = pts.map((p, i) => (i ? 'L' : 'M') + P(p).map(v => v.toFixed(1)).join(' ')).join('');
-  const col = v => v === 0 ? '#4a515b' : v >= 3 ? '#e9eef4' : '#d9a35a';   // the legend's three stops and nothing between
-  let cum = [0]; for (let i = 1; i < sp.length; i++) cum.push(cum[i - 1] + Math.hypot(sp[i][0] - sp[i - 1][0], sp[i][1] - sp[i - 1][1]));
-  const total = cum[cum.length - 1];
-  // the loop is an out-and-back: the turnaround is the spot farthest from the start; the spots before it are the outbound leg, after it the return
-  const d0 = i => Math.hypot(sp[i][0] - sp[0][0], sp[i][1] - sp[0][1]);
-  let turn = 0; for (let i = 1; i < sp.length; i++) if (d0(i) > d0(turn)) turn = i;
-  // two lanes: every dot sits 3 px to the left of its own direction of travel, so where the return leg runs back over the outbound stretch the legs are 6 px apart and neither hides the other
-  // heading over three spots each way, so one jittered spot cannot flip a dot or the bracket to the other side
-  const head = i => { const [ax, ay] = P(sp[Math.max(0, i - 3)]), [bx, by] = P(sp[Math.min(sp.length - 1, i + 3)]); const l = Math.hypot(bx - ax, by - ay) || 1; return [(bx - ax) / l, (by - ay) / l]; };
-  const side = (i, dist) => { const [x, y] = P(sp[i]), [hx, hy] = head(i); return [x + hy * dist, y - hx * dist]; };
-  const rad = wide ? 5 : 3.5, off = 3, Q = i => side(i, off);
-  const mid = idx => { const a = idx.map(Q); return [a.reduce((s, p) => s + p[0], 0) / a.length, a.reduce((s, p) => s + p[1], 0) / a.length]; };
-  const strong = [], last = [];
-  cum.forEach((c, i) => { if (c >= 800 && c + 20 <= 1700) strong.push(i); if (c >= total - 400) last.push(i); });   // strong: the 37 spots 0.8 to 1.7 km in (indices 22 to 58; the spot at 1,697 m is the 1.7 km mark itself and is left out)
-  const nearStrong = i => i > turn && strong.some(j => { const a = P(sp[i]), b = P(sp[j]); return Math.hypot(a[0] - b[0], a[1] - b[1]) < 16; });   // return-leg dots running back over the bracketed stretch
-  let s = `<path d="${d}" fill="none" stroke="rgba(255,255,255,.32)" stroke-width="2" stroke-linejoin="round"/>`;   // the route: a plain 2 px line, no halo
-  sp.forEach((p, i) => { const [x, y] = Q(i); s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${rad}" fill="${col(route.spots[i].storm_m)}"${nearStrong(i) ? ' opacity=".4"' : ''}/>`; });   // opaque dots, one colour stop each; the return lane dimmed to 40 percent beside the bracket so the outbound dots the caption describes stand out
-  // a thin bracket beside each captioned stretch: a 1 px line along the outer side of its lane, with a short tick at each end, and its middle is where the leader lands
-  const bracket = idx => {
-    const gap = off + rad + 5, pts = idx.map(i => side(i, gap)), tick = (i, p) => { const q = side(i, gap - 4); return `M${p[0].toFixed(1)} ${p[1].toFixed(1)}L${q[0].toFixed(1)} ${q[1].toFixed(1)}`; };
-    s += `<path d="${pts.map((p, j) => (j ? 'L' : 'M') + p.map(v => v.toFixed(1)).join(' ')).join('')}${tick(idx[0], pts[0])}${tick(idx[idx.length - 1], pts[pts.length - 1])}" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1" stroke-linejoin="round"/>`;
-    return pts[Math.floor(pts.length / 2)];
-  };
-  // captions sit off the line, with a leader from the stretch's bracket to the nearest edge of the box; returns the box's bottom edge
-  const amberIn = idx => { const m = Math.floor(idx.length / 2); for (let k = 0; k < idx.length; k++) for (const j of [m + k, m - k]) if (j >= 0 && j < idx.length) { const v = route.spots[idx[j]].storm_m; if (v > 0 && v < 3) return Q(idx[j]); } return mid(idx); };   // the amber dot nearest the bracket's middle
-  const cap = (idx, lines, fx, fy, end) => {                         // end: where the leader lands; the bracket's middle unless given
-    const bm = bracket(idx), [x, y] = end || bm, tw = Math.max(...lines.map(l => l.length)) * 7.1 + 14, th = lines.length * 21 + 10;
-    const tx = Math.max(20, Math.min(W - 20 - tw, fx)), ty = Math.max(padT, Math.min(H - 20 - th, fy));
-    const bx = tx + tw / 2, by = ty + th / 2, dx = bx - x, dy = by - y;
-    const f = Math.min(Math.abs(dx) > 1e-6 ? (tw / 2) / Math.abs(dx) : 1e9, Math.abs(dy) > 1e-6 ? (th / 2) / Math.abs(dy) : 1e9);
-    const ex = bx - dx * f, ey = by - dy * f;
-    s += `<line x1="${x.toFixed(1)}" y1="${y.toFixed(1)}" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" stroke="rgba(255,255,255,.45)" stroke-width="1"/>`;
-    s += `<rect x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" width="${tw.toFixed(1)}" height="${th}" rx="4" fill="rgba(10,13,18,.9)"/>`;
-    lines.forEach((l, j) => { s += `<text class="${j ? 'lbl2' : 'lbl'}" x="${(tx + 7).toFixed(1)}" y="${ty + 21 + j * 21}">${l}</text>`; });
-    return ty + th;
-  };
-  const sm = mid(strong), lm = mid(last);
-  if (wide) {
-    cap(strong, ['Where snow hit hardest, 0.8 to 1.7 km in:', 'typical 3 m+ with no snow, typical 2 m in the storm (37 spots)'], sm[0] + 120, sm[1] + 64, amberIn(strong));   // on the bracket's side of the lane, so the leader crosses no dots
-    cap(last, ['The last 400 m, hard on both days', 'the road, not the weather', 'the loop ends where it starts'], lm[0] + 72, lm[1] + 16);
-  } else {                                                           // phone: the label box clears the route by well over 12 px, with the same leader as desktop
-    cap(strong, ['Where snow hit hardest,', '0.8 to 1.7 km in (37 spots):', 'typical 3 m+ no snow,', 'typical 2 m in the storm'], 20, sm[1] - 10, amberIn(strong));
-    const lastLines = ['The last 400 m, hard on both days', 'the road, not the weather'], textTop = $('b7').querySelector('.text').getBoundingClientRect().top - r.top;
-    const th3 = 3 * 21 + 10, ty3 = Math.max(padT, Math.min(H - 20 - th3, lm[1] + 44));
-    if (ty3 + th3 <= textTop - 12) lastLines.push('the loop ends where it starts');     // the third line only when the box stays clear of the heading
-    cap(last, lastLines, 20, lm[1] + 44);
-  }
-  svg.innerHTML = s;
-}
-function drawScanBg(id, grid) {                                          // the storm scan, faint, as the ground behind the loop (b7) and behind the clip (b8, with its 10 m grid)
-  const cv = $(id), L = state.layers.sw; if (!L || tier <= 1) return;
-  const r = cv.getBoundingClientRect(); if (!r.width) return;
-  cv.width = Math.round(r.width); cv.height = Math.round(r.height);
-  const g = cv.getContext('2d'); g.clearRect(0, 0, cv.width, cv.height);
-  const k = Math.max(cv.width / L.c.width, cv.height / L.c.height), ox = (cv.width - L.c.width * k) / 2, oy = (cv.height - L.c.height * k) / 2;
-  if (grid) {
-    const gp = 10 * V.ppmWide * V.dpr * k, gx = ox + V.cx * V.dpr * k, gy = oy + V.cy * V.dpr * k;
-    g.strokeStyle = 'rgba(255,255,255,.07)'; g.lineWidth = 1;
-    for (let x = gx % gp; x < cv.width; x += gp) { g.beginPath(); g.moveTo(Math.round(x) + .5, 0); g.lineTo(Math.round(x) + .5, cv.height); g.stroke(); }
-    for (let y = gy % gp; y < cv.height; y += gp) { g.beginPath(); g.moveTo(0, Math.round(y) + .5); g.lineTo(cv.width, Math.round(y) + .5); g.stroke(); }
-  }
-  g.drawImage(L.c, ox, oy, L.c.width * k, L.c.height * k);
-}
-function drawLoopBg() { drawScanBg('loopbg', false); if (V.wide) drawScanBg('clipbg', true); }
-
-/* ---------- beat 9: how many spots at each room, both days (counted from route.json) ---------- */
-function drawHist() {
-  const svg = $('hist'), W = Math.max(300, svg.parentElement.getBoundingClientRect().width || 600), H = innerWidth >= 1000 ? Math.max(300, Math.min(760, innerHeight - 320)) : 260;
-  const sizes = [0, ...route.sizes_m], lab = v => v === 0 ? '0' : v >= 3 ? '3 m+' : String(v);
-  const cs = sizes.map(v => route.spots.filter(s => s.storm_m === v).length), cc = sizes.map(v => route.spots.filter(s => s.clear_m === v).length);
-  const max = Math.max(...cs, ...cc), padL = 40, padR = 8, padT = 44, padB = 32, n = sizes.length;
-  const gw = (W - padL - padR) / n, bw = Math.min(36, gw * 0.38), sy = v => padT + (H - padT - padB) * (1 - v / max);
-  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', W); svg.setAttribute('height', H);
-  let s = `<line class="ax" x1="${padL}" y1="${H - padB + .5}" x2="${W - padR}" y2="${H - padB + .5}"/>`;
-  [0, 100, 200].forEach(v => { if (v <= max) { s += `<line class="ax" x1="${padL}" y1="${sy(v).toFixed(1)}" x2="${W - padR}" y2="${sy(v).toFixed(1)}" stroke-dasharray="2 4"/><text class="t" x="${padL - 6}" y="${(sy(v) + 5).toFixed(1)}" text-anchor="end">${v}</text>`; } });
-  sizes.forEach((v, i) => {
-    const x0 = padL + gw * i + gw / 2;
-    s += `<rect class="bc" x="${(x0 - bw - 1).toFixed(1)}" y="${sy(cc[i]).toFixed(1)}" width="${bw}" height="${(H - padB - sy(cc[i])).toFixed(1)}"/>`;
-    s += `<rect class="bs" x="${(x0 + 1).toFixed(1)}" y="${sy(cs[i]).toFixed(1)}" width="${bw}" height="${(H - padB - sy(cs[i])).toFixed(1)}"/>`;
-    s += `<text class="t" x="${x0.toFixed(1)}" y="${H - padB + 20}" text-anchor="middle">${lab(v)}</text>`;
-    if (cc[i] >= 100 || cs[i] >= 100) { s += `<text class="ti" x="${(x0 - 1).toFixed(1)}" y="${(sy(cc[i]) - 6).toFixed(1)}" text-anchor="end">${cc[i]}</text><text class="ti" x="${(x0 + 1).toFixed(1)}" y="${(sy(cs[i]) - 6).toFixed(1)}" text-anchor="start">${cs[i]}</text>`; }
-  });
-  s += `<text class="t" x="${padL}" y="16">spots, by room for error in metres</text>`;
-  svg.innerHTML = s;
-}
-
-/* ---------- beat 10: the street a week earlier, dimmed, as the ending's figure. The same layer as beat 3, cropped to the figure's place on the stage. ---------- */
-let endDrawn = '';
-function drawEndFig() {
-  const fig = $('endfig'), cv = $('endcv'), r = fig.getBoundingClientRect(); if (!r.width || !r.height || tier <= 1) return;
-  const s = scans.clear && scans.clear.done ? scans.clear : (scans.storm && scans.storm.done ? scans.storm : null); if (!s) return;
-  const key = `${s === scans.clear}:${Math.round(r.width)}x${Math.round(r.height)}`; if (key === endDrawn) return; endDrawn = key;
-  const k = Math.min(2, devicePixelRatio || 1), W = Math.round(r.width * k), H = Math.round(r.height * k);
-  const g = cv.getContext('2d'), ppm = W / (V.wide ? 64 : 36), cx = W / 2, cy = V.wide ? H * 0.5 : H * 0.55;   // wide enough for both sides of the street
-  const P = pointPainter(g, W, H, k > 1.4 ? 2 : 1), boost = V.wide ? 0.65 : 0.9, n = s.n;                    // the points at the stage's own brightness (b1 to b3), not dimmed
-  runSliced('endfig', (function* () {
-    for (let i = 0; i < n; i += 25000) { P.scan(s, ppm, cx, cy, boost, i, Math.min(n, i + 25000)); yield; }
-    cv.width = W; cv.height = H; P.done();
-    g.save(); g.translate(cx, cy);                                                                               // the same filled car as b1 to b3, with its flat ground band
-    g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(0, 0, 1.2 * ppm, 2.7 * ppm, 0, 0, Math.PI * 2); g.fill();
-    paintCarMesh(g, ppm); g.restore();
-  })());
-}
-
-/* ---------- beat 8: the clip. The camera half is copied into the inset canvas while it plays. ---------- */
-function setupClip() {
-  const v = $('clip'), cv = $('camcv'), g = cv.getContext('2d'), sec = $('b8');
-  const posterImg = new Image(); let armed = false, raf = 0;
-  const drawCam = () => {
-    if (v.readyState >= 2) g.drawImage(v, 0, 0, 720, 640, 0, 0, cv.width, cv.height);
-    else if (posterImg.complete && posterImg.naturalWidth) g.drawImage(posterImg, 0, 0, posterImg.naturalWidth, posterImg.naturalHeight / 2, 0, 0, cv.width, cv.height);
-  };
-  const loop = () => { drawCam(); raf = v.paused ? 0 : requestAnimationFrame(loop); };
-  const attach = () => { posterImg.onload = drawCam; posterImg.src = 'media/part2_poster.webp'; v.src = v.dataset.src; v.load(); };
-  const arm = now => { if (armed) return; armed = true; if (now || !('requestIdleCallback' in window)) attach(); else requestIdleCallback(attach, { timeout: 300 }); };
-  new IntersectionObserver(es => { if (es[0].isIntersecting) arm(false); }, { rootMargin: '100% 0px' }).observe(sec);   // one screen early: attach the src in an idle slice, not in the scroll frame
-  new IntersectionObserver(es => { if (es[0].isIntersecting) { arm(true); v.play().catch(() => {}); } else v.pause(); }, { threshold: .3 }).observe(sec);
-  v.addEventListener('play', () => { cancelAnimationFrame(raf); loop(); });
-  v.addEventListener('pause', () => { cancelAnimationFrame(raf); raf = 0; drawCam(); });
-  v.addEventListener('loadeddata', drawCam);
-  const toggle = () => { if (!armed) arm(true); if (v.paused) v.play().catch(() => {}); else v.pause(); };
-  v.addEventListener('click', toggle); cv.addEventListener('click', toggle);
-}
-
-/* ---------- build ---------- */
-function build() {
-  measure();
-  state.layers = {}; jobs.length = 0;
-  if (tier > 1) {
-    if (scans.storm) { for (const k of NEED[state.name]) queue(k); queue('sw'); queue('nw'); }
-    if (scans.clear) { queue('cw'); queue('cnw'); }
-    placeStatic(); if (scans.storm && scans.storm.done) placeData(scans.storm); drawFrame();
-  } else placeStatic();
-  drawBars(); drawLoop(); drawHist(); if (route) { updateTry(); drawTry(); }
-  endDrawn = ''; drawEndFig();
-  if (scans.storm && scans.storm.done) queue('sw', drawLoopBg);
-}
-let clearStarted = false;
-async function loadClear() {
-  if (clearStarted || tier <= 1) return; clearStarted = true;
-  await streamScan('clear', () => {});
-  queue('cw'); queue('cnw'); endDrawn = ''; drawEndFig(); if (tryArmed) drawTryPanel('clear');
-}
-
-(async () => {
-  const scansMeta = fetch('data/scans.json').then(r => r.json());
-  const routeJob = fetch('data/route.json').then(r => r.json());
-  if (tier > 1) {
-    // the storm scan streams in and is drawn in slices as it arrives: lowest density first, settled when the file ends
-    streamScan('storm', s => { if (!state.layers.sw) { measure(); queue('sw'); queue('nw'); placeStatic(); } schedule(); }).then(s => {
-      placeData(s);
-      const after = () => { queue('sc'); queue('nc'); drawLoopBg(); drawEndFig(); if (tryArmed) drawTryPanel('storm'); };
-      if ('requestIdleCallback' in window) requestIdleCallback(after); else setTimeout(after, 400);
-      return loadCar().then(c => { car = c; if (!state.anim) drawFrame(); window.__snow.ready = true; });
-    });
-  } else { measure(); placeStatic(); window.__snow.ready = true; }
-  scansMeta.then(scansJ => {
-    $('sensor').innerHTML = `Velodyne Alpha Prime, 128 ch.<span class="when">Boreas, Toronto. ${stamp(scansJ.storm.scan_time_us)}</span>`;
-    $('sensor2').innerHTML = `Velodyne Alpha Prime, 128 ch.<span class="when">Boreas, Toronto. ${stamp(scansJ.clear.scan_time_us)}</span>`;
-  });
-  route = await routeJob;
-  hero = route.spots.find(s => s.id === route.hero.id);
-  buildMarks(); buildTry(); drawBars(); drawLoop(); drawHist(); setupClip();
-  if (!state.layers.sw) { measure(); placeStatic(); }
-  Object.assign(window.__snow, { state, V, STATES, drawFrame, setState, scans });
-
-  // which state is on screen: the one that covers the middle of the viewport. Forward: one timed move. Backward: at once.
-  const marks = [...document.querySelectorAll('[data-state]')];
-  let shown = -1;
-  const pick = () => {
-    const mid = innerHeight / 2;
-    let i = marks.findIndex(m => { const r = m.getBoundingClientRect(); return r.top <= mid && r.bottom > mid; });
-    if (i < 0) i = scrollY < 10 ? 0 : (marks[0].getBoundingClientRect().top > mid ? 0 : marks.length - 1);
-    if (i !== shown) { const fwd = i > shown && shown >= 0; shown = i; setState(marks[i].dataset.state, tier > 1 && fwd); }
-  };
-  pick();
-  addEventListener('scroll', pick, { passive: true });
-  // draw only while the stage is on screen
-  new IntersectionObserver(es => { state.visible = es[0].isIntersecting; if (!state.visible) { cancelAnimationFrame(state.anim); state.anim = 0; } else if (tier > 1) drawFrame(); }).observe(stage);
-  // the clear scan and the try-it images load when their beats are within two screens
-  new IntersectionObserver((es, io) => { if (es.some(e => e.isIntersecting)) { loadClear(); io.disconnect(); } }, { rootMargin: '200% 0px' }).observe($('b3'));
-  new IntersectionObserver((es, io) => { if (es.some(e => e.isIntersecting)) { tryArmed = true; updateTry(); io.disconnect(); } }, { rootMargin: '200% 0px' }).observe($('b5'));
-  new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) drawEndFig(); }, { rootMargin: '150% 0px' }).observe($('b10'));
-  // the header follows the page theme over the two text sections
-  const io = new IntersectionObserver(es => { document.body.classList.toggle('on-light', es.some(e => e.isIntersecting && e.boundingClientRect.top <= 60)); }, { rootMargin: '-0px 0px -95% 0px' });
-  io.observe($('b9')); io.observe($('b10'));
-  let lastW = innerWidth, lastH = innerHeight, timer = 0;
-  addEventListener('resize', () => {
-    if (innerWidth === lastW && Math.abs(innerHeight - lastH) < 160) return;   // ignore the phone url bar
-    clearTimeout(timer); timer = setTimeout(() => { lastW = innerWidth; lastH = innerHeight; build(); shown = -1; pick(); }, 150);
-  });
-  canvas.addEventListener('contextlost', () => { goNogl(); });
+  frameHooks.push(()=>{if(heroVisible) tick();});
 })();
+
+// ---------- stat row: numbers count up when they scroll in ----------
+new IntersectionObserver((es,obs)=>es.forEach(e=>{if(!e.isIntersecting)return;obs.unobserve(e.target);
+  e.target.querySelectorAll("[data-count]").forEach(n=>{const to=+n.dataset.count,dec=+(n.dataset.dec||0);
+    if(RM){n.textContent=to.toFixed(dec);return;}
+    const o={v:to*0.6}; gsap.to(o,{v:to,duration:1.1,ease:"power2.out",onUpdate:()=>{n.textContent=o.v.toFixed(dec);},onComplete:()=>{n.textContent=to.toFixed(dec);}});});
+}),{threshold:.4}).observe(document.getElementById("stats"));
+
+// ---------- split text: each h2 and h3 lifts in word by word the first time it scrolls in ----------
+if(!RM) document.querySelectorAll("main h2, main h3").forEach(h=>{
+  h.innerHTML=h.textContent.split(" ").map(w=>`<span class="sw"><span>${w}</span></span>`).join(" ");
+  const inner=h.querySelectorAll(".sw>span");
+  gsap.set(inner,{yPercent:60,opacity:0});
+  ScrollTrigger.create({trigger:h,start:"top 88%",once:true,onEnter:()=>gsap.to(inner,{yPercent:0,opacity:1,duration:.7,ease:"power3.out",stagger:.035})});
+});
+
+// ---------- the map: OpenFreeMap vector tiles, our own minimal style (roads only, few labels) ----------
+const fmt=(m,capped)=>capped?"3\u00a0m+":`${m}\u00a0m`;
+const STOPS=[[0,[224,72,76]],[1.5,[230,197,80]],[3,[63,181,122]]];
+function colour(m){for(let i=1;i<STOPS.length;i++){const [a,ca]=STOPS[i-1],[b,cb]=STOPS[i];if(m<=b){const t=(m-a)/(b-a);return `rgb(${ca.map((v,k)=>Math.round(v+(cb[k]-v)*t)).join(",")})`;}}return `rgb(${STOPS[2][1].join(",")})`;}
+const PX_PER_M=400/32;
+function mix(a,b){return `color-mix(in srgb, ${a} ${Math.round(b*100)}%, transparent)`;}
+function rgba(hex,a){const n=parseInt(hex.slice(1),16);return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`;}
+function mapStyle(){
+  const P=M_PAGE, I=M_INK, light=false;
+  return {version:8,glyphs:"https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
+    sources:{ofm:{type:"vector",url:"https://tiles.openfreemap.org/planet"}},
+    layers:[
+      {id:"bg",type:"background",paint:{"background-color":P}},
+      {id:"water",type:"fill","source":"ofm","source-layer":"water",paint:{"fill-color":rgba(I,light?.1:.05)}},
+      {id:"rail",type:"line",source:"ofm","source-layer":"transportation",filter:["==",["get","class"],"rail"],paint:{"line-color":rgba(I,.14),"line-width":.6,"line-dasharray":[3,3]}},
+      {id:"road-minor",type:"line",source:"ofm","source-layer":"transportation",minzoom:12,filter:["in",["get","class"],["literal",["minor","service","tertiary","residential","unclassified","living_street","path"]]],paint:{"line-color":rgba(I,light?.5:.3),"line-width":["interpolate",["linear"],["zoom"],12,.4,16,1.2]}},
+      {id:"road-mid",type:"line",source:"ofm","source-layer":"transportation",filter:["in",["get","class"],["literal",["secondary","primary"]]],paint:{"line-color":rgba(I,light?.6:.36),"line-width":["interpolate",["linear"],["zoom"],12,.7,16,1.8]}},
+      {id:"road-major",type:"line",source:"ofm","source-layer":"transportation",filter:["in",["get","class"],["literal",["trunk","motorway"]]],paint:{"line-color":rgba(I,light?.75:.48),"line-width":["interpolate",["linear"],["zoom"],12,1,16,2.4]}},
+      {id:"road-name",type:"symbol",source:"ofm","source-layer":"transportation_name",minzoom:13,filter:["in",["get","class"],["literal",["primary","secondary","tertiary","trunk","motorway","minor","residential"]]],
+        layout:{"symbol-placement":"line","text-field":["get","name"],"text-font":["Noto Sans Regular"],"text-size":["interpolate",["linear"],["zoom"],13,10,16,12],"text-letter-spacing":.04,"symbol-spacing":360},
+        paint:{"text-color":rgba(I,light?.85:.62),"text-halo-color":P,"text-halo-width":1.2}},
+    ]};
+}
+let map=null; const carMarker={ll:null,on:true,setLngLat(ll){this.ll=ll;if(map&&map.getSource("car"))map.getSource("car").setData({type:"Feature",geometry:{type:"Point",coordinates:ll}});return this;},addTo(){this.on=true;if(map&&map.getLayer("car-dot")){map.setLayoutProperty("car-dot","visibility","visible");map.setLayoutProperty("car-glow","visibility","visible");}return this;},remove(){this.on=false;if(map&&map.getLayer("car-dot")){map.setLayoutProperty("car-dot","visibility","none");map.setLayoutProperty("car-glow","visibility","none");}}};
+function initMap(){
+  map=new maplibregl.Map({container:"map",style:mapStyle(),center:[-79.47,43.78],zoom:14.2,interactive:false,attributionControl:false,fadeDuration:250,cooperativeGestures:true,locale:{"CooperativeGesturesHandler.WindowsHelpText":"Hold ctrl and scroll to zoom the map","CooperativeGesturesHandler.MacHelpText":"Hold \u2318 and scroll to zoom the map","CooperativeGesturesHandler.MobileHelpText":"Use two fingers to move the map"}});
+
+  map.on("style.load",addLayers);
+  // every dot answers within a 40 px box (44 px on phones), whatever size it is drawn at
+  const HIT=innerWidth<700?22:20;
+  const nearestDot=pt=>{if(!map.getLayer("spots-dots"))return null;const fs=map.queryRenderedFeatures([[pt.x-HIT,pt.y-HIT],[pt.x+HIT,pt.y+HIT]],{layers:["spots-dots"]});let best=null,bd=1e9;for(const f of fs){const q=map.project(f.geometry.coordinates);const d=Math.hypot(q.x-pt.x,q.y-pt.y);if(d<bd){bd=d;best=f;}}return best;};
+  map.on("click",e=>{if(!free)return;const f=nearestDot(e.point);if(f)selectSpot(f.properties.i,{pan:false,scroll:false});});
+  const tip=document.getElementById("maptip");
+  map.on("mousemove",e=>{if(!free||!matchMedia("(hover: hover)").matches)return;const f=nearestDot(e.point);const i=f?f.properties.i:-1;map.getCanvas().style.cursor=f?"pointer":"";
+    if(i!==hovered){hovered=i;paintSpots();}
+    if(f){const s=data.spots[i];tip.innerHTML=`Spot ${i+1} \u00b7 snowstorm <b>${fmt(s.storm_m,s.storm_capped)}</b> \u00b7 no snow <b>${fmt(s.clear_m,s.clear_capped)}</b>`;const q=map.project(f.geometry.coordinates);tip.style.left=q.x+"px";tip.style.top=q.y+"px";tip.classList.add("on");}else tip.classList.remove("on");});
+  map.on("mouseout",()=>{tip.classList.remove("on");if(hovered!==-1){hovered=-1;paintSpots();}});
+  const around=()=>selected>=0?{around:[data.spots[selected].lon,data.spots[selected].lat]}:{};
+  document.getElementById("z-in").onclick=()=>map.zoomIn({duration:300,...around()});
+  document.getElementById("z-out").onclick=()=>map.zoomOut({duration:300,...around()});
+  document.getElementById("z-all").onclick=()=>map.fitBounds(bounds(),{padding:fitPad(),duration:700});
+  if(data) placeStart();
+}
+let data=null, day="storm", selected=-1, hovered=-1, freeCallout=false, shown=0, free=false, route=[], cum=[], stops=[], spotIdx=[], plan=null, zoomedOut=false, styleReady=false, carD=null;
+const STOP_IDS=["003_005","007_005","009_008"];   // the drive's three stops: the opening spot (42), spot 90, spot 117 (both days measured, 2 vs 1.75 m). Not a "most affected" ranking
+const RECHECK_IDS=[];   // emptied Nov 23: every value now comes from the height-locked rerun (notes/results-zlock.md); the "under recheck" strings below stay inert
+function spotsGeo(){return {type:"FeatureCollection",features:data.spots.map((s,i)=>({type:"Feature",geometry:{type:"Point",coordinates:[s.lon,s.lat]},properties:{i,ri:spotIdx[i],cs:colour(s.storm_m),cc:colour(s.clear_m)}}))};}
+function addLayers(){
+  if(!data) return;
+  if(!map.getSource("route")){const a=Math.min(...spotIdx),b=Math.max(...spotIdx); map.addSource("route",{type:"geojson",data:{type:"Feature",geometry:{type:"LineString",coordinates:route.slice(a,b+1).map(p=>[p[1],p[0]])}}});}
+  if(!map.getSource("spots")) map.addSource("spots",{type:"geojson",data:spotsGeo()});
+  const lightMap=false;
+  map.addLayer({id:"route-glow",type:"line",source:"route",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":M_ACC,"line-opacity":lightMap?0:.22,"line-width":innerWidth>1400?16:10,"line-blur":innerWidth>1400?9:6}});
+  map.addLayer({id:"route-line",type:"line",source:"route",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":M_ACC,"line-opacity":lightMap?1:.85,"line-width":innerWidth>1400?(lightMap?3.2:2.6):(lightMap?2.2:1.6)}});
+  map.addLayer({id:"spots-dots",type:"circle",source:"spots",paint:{"circle-radius":["interpolate",["linear"],["zoom"],13,innerWidth>1400?4.5:3,16,innerWidth>1400?7:5.5],
+    "circle-color":["get",day==="storm"?"cs":"cc"],"circle-stroke-color":["case",["==",["get","i"],selected],"#ffffff",M_PAGE],"circle-stroke-width":["case",["==",["get","i"],selected],3,1],"circle-opacity":["case",["<=",["get","ri"],shown],1,0],"circle-stroke-opacity":["case",["<=",["get","ri"],shown],1,0]}});
+  if(!map.getSource("car")) map.addSource("car",{type:"geojson",data:{type:"Feature",geometry:{type:"Point",coordinates:carMarker.ll||[route[0][1],route[0][0]]}}});
+  map.addLayer({id:"car-glow",type:"circle",source:"car",paint:{"circle-radius":innerWidth>1400?24:16,"circle-color":M_ACC,"circle-opacity":lightMap?0:.3,"circle-blur":1}});
+  map.addLayer({id:"car-dot",type:"circle",source:"car",paint:{"circle-radius":innerWidth>1400?11:7,"circle-color":M_ACC,"circle-stroke-color":M_INK,"circle-stroke-width":2}});
+  if(!carMarker.on){map.setLayoutProperty("car-dot","visibility","none");map.setLayoutProperty("car-glow","visibility","none");}
+  styleReady=true; paintSpots(); applyDriveBeat(Math.max(0,driveBeat),false);
+}
+function paintSpots(){
+  if(!styleReady||!map.getLayer("spots-dots")) return;
+  map.setPaintProperty("spots-dots","circle-color",["get",day==="storm"?"cs":"cc"]);
+  map.setPaintProperty("spots-dots","circle-opacity",["case",["<=",["get","ri"],shown],1,0]);
+  map.setPaintProperty("spots-dots","circle-stroke-opacity",["case",["<=",["get","ri"],shown],1,0]);
+  const lightMap=false;
+  map.setPaintProperty("spots-dots","circle-stroke-color",["case",["==",["get","i"],selected],lightMap?"#28363e":"#ffffff",["==",["get","i"],hovered],M_INK,lightMap?"rgba(40,54,62,.8)":M_PAGE]);
+  map.setPaintProperty("spots-dots","circle-stroke-width",["case",["==",["get","i"],selected],3,["==",["get","i"],hovered],2.5,lightMap?1.2:1]);
+  // the selected dot draws last and 2 px bigger, so its ring is not hidden under its neighbours on the free map
+  map.setLayoutProperty("spots-dots","circle-sort-key",["case",["==",["get","i"],selected],2,["==",["get","i"],hovered],1,0]);
+  const bump=["case",["==",["get","i"],selected],2,0];
+  map.setPaintProperty("spots-dots","circle-radius",["interpolate",["linear"],["zoom"],13,["+",innerWidth>1400?4.5:3,bump],16,["+",innerWidth>1400?7:5.5,bump]]);
+}
+function placeStart(){const [la,lo]=along(cum[Math.min(...spotIdx)]); map.jumpTo({center:[lo,la],zoom:14.2}); carMarker.setLngLat([lo,la]).addTo(map); if(map.isStyleLoaded()&&!styleReady) addLayers();}
+// MapLibre (800 KB) only loads when the drive is within a screen and a half
+let mapRequested=false;
+function requestMap(){if(mapRequested)return;mapRequested=true;
+  const css=document.createElement("link");css.rel="stylesheet";css.href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css";document.head.appendChild(css);
+  const js=document.createElement("script");js.src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js";js.onload=initMap;document.head.appendChild(js);}
+new IntersectionObserver((es)=>{if(es.some(e=>e.isIntersecting))requestMap();},{rootMargin:"150% 0px"}).observe(driveEl);
+ScrollTrigger.create({trigger:hero,start:"top top-=10%",once:true,onEnter:requestMap});   // the map warms up while the hero plays, so its tiles are there before the drive
+function show(s,i,scroll=true){
+  const card=document.getElementById("spot"); card.hidden=false;
+  const m=day==="storm"?s.storm_m:s.clear_m, cap=day==="storm"?s.storm_capped:s.clear_capped;
+  document.getElementById("s-cam").src=s[day+"_cam"]||""; document.getElementById("s-lid").src=s[day+"_lidar"];
+  const c=document.getElementById("s-circ"); c.setAttribute("r",Math.max(m*PX_PER_M,6)); c.setAttribute("stroke",day==="storm"?acc():ink()); c.setAttribute("stroke-dasharray",cap?"6 5":"");
+  document.getElementById("s-head").textContent=`Spot ${i+1} of ${data.n}, ${day==="storm"?"snowstorm":"no snow falling"}${m===0?". It did not recover from the smallest push here":""}.${RECHECK_IDS.includes(s.id)?" Storm value under recheck (see The limits).":""}`;
+  document.getElementById("s-storm").textContent=fmt(s.storm_m,s.storm_capped);
+  document.getElementById("s-clear").textContent=fmt(s.clear_m,s.clear_capped);
+  if(scroll) card.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function setDay(d){day=d;document.getElementById("b-storm").setAttribute("aria-pressed",d==="storm");document.getElementById("b-clear").setAttribute("aria-pressed",d==="clear");paintSpots();if(selected>=0)show(data.spots[selected],selected,false);}
+document.getElementById("b-storm").onclick=()=>setDay("storm");
+document.getElementById("b-clear").onclick=()=>setDay("clear");
+function along(d){let lo=0,hi=cum.length-1;while(lo<hi){const mid=(lo+hi)>>1;if(cum[mid]<d)lo=mid+1;else hi=mid;}
+  const i=Math.max(1,lo),t=clamp((d-cum[i-1])/Math.max(1e-6,cum[i]-cum[i-1]),0,1);return [lerp(route[i-1][0],route[i][0],t),lerp(route[i-1][1],route[i][1],t),i];}
+function buildPlan(){const d0=cum[Math.min(...spotIdx)],dEnd=cum[Math.max(...spotIdx)],sd=stops.map(k=>cum[spotIdx[k]]);
+  // [screens of scroll, from distance, to distance, stop index or null]: 2 screens to drive to a stop, a full screen held there
+  const legs=[[2,d0,sd[0],null],[1,sd[0],sd[0],0],[2,sd[0],sd[1],null],[1,sd[1],sd[1],1],[2,sd[1],sd[2],null],[1,sd[2],sd[2],2],[1.2,sd[2],dEnd,null]];
+  plan=legs; if(styleReady&&map) applyDriveBeat(Math.max(0,driveBeat),false);}
+function bounds(){const b=new maplibregl.LngLatBounds();data.spots.forEach(s=>b.extend([s.lon,s.lat]));return b;}
+function fitPad(){return innerWidth>700?{top:110,bottom:150,left:160,right:160}:40;}
+// one way to pick a spot: from a tap, the arrows, the arrow keys or a jump button
+function selectSpot(i,{pan=true,scroll=false}={}){
+  if(!data||i<0||i>=data.n) return; selected=i; paintSpots(); const s=data.spots[i]; show(s,i,scroll);
+  if(free){freeCallout=true; document.getElementById("c-cam").src=s[day+"_cam"]||s.storm_cam; document.getElementById("c-lab").textContent=`Spot ${i+1} of ${data.n}${i===window.heroIdx?", the spot from the opening":stops.includes(i)?", one of the three stops":""}${RECHECK_IDS.includes(s.id)?". Storm value under recheck (see The limits)":""}.`;
+    document.getElementById("c-storm").textContent=fmt(s.storm_m,s.storm_capped); document.getElementById("c-clear").textContent=fmt(s.clear_m,s.clear_capped); document.getElementById("callout").classList.add("on"); driveEl.classList.add("sheet");
+    if(pan&&map) map.easeTo({center:[s.lon,s.lat],duration:RM?0:650,essential:true});}
+}
+document.getElementById("c-prev").onclick=()=>selectSpot(selected-1);
+document.getElementById("c-next").onclick=()=>selectSpot(selected+1);
+document.getElementById("c-close").onclick=()=>{freeCallout=false;document.getElementById("callout").classList.remove("on");driveEl.classList.remove("sheet");};
+document.getElementById("c-more").onclick=e=>{e.preventDefault();document.getElementById("spot").scrollIntoView({behavior:RM?"auto":"smooth",block:"start"});};
+new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)&&freeCallout){freeCallout=false;document.getElementById("callout").classList.remove("on");driveEl.classList.remove("sheet");}},{threshold:.3}).observe(document.getElementById("spot"));
+document.getElementById("s-prev").onclick=()=>selectSpot(selected-1);
+document.getElementById("s-next").onclick=()=>selectSpot(selected+1);
+addEventListener("keydown",e=>{if(!free||selected<0||e.metaKey||e.ctrlKey||e.altKey||(document.activeElement&&document.activeElement.type==="range"))return;
+  if(e.key==="ArrowLeft"){e.preventDefault();selectSpot(selected-1);} else if(e.key==="ArrowRight"){e.preventDefault();selectSpot(selected+1);}});
+let lastShown=-1, lastReveal=0, labelsOn=null, carTween=null;
+function setLabels(on){if(labelsOn===on||!map||!map.getLayer("road-name"))return;labelsOn=on;map.setLayoutProperty("road-name","visibility",on?"visible":"none");}
+function setDriveBeat(b){if(b===driveBeat)return;const fwd=b>driveBeat;driveBeat=b;setRail(driveRail,b);if(plan&&styleReady&&map)applyDriveBeat(b,fwd&&!RM);}
+const mapcap=document.getElementById("mapcap"), callout=document.getElementById("callout"), mapui=document.getElementById("mapui");
+function kmIn(d){return ((d-cum[Math.min(...spotIdx)])/1000).toFixed(1);}
+function placeCar(d){carD=d;const [la,lo,i]=along(d);carMarker.setLngLat([lo,la]);map.jumpTo({center:[lo,la],zoom:14.2});shown=i;
+  const nowMs=performance.now();
+  if(shown!==lastShown&&map.getLayer("spots-dots")&&(nowMs-lastReveal>160||carTween===null)){lastShown=shown;lastReveal=nowMs;map.setPaintProperty("spots-dots","circle-opacity",["case",["<=",["get","ri"],shown],1,0]);map.setPaintProperty("spots-dots","circle-stroke-opacity",["case",["<=",["get","ri"],shown],1,0]);}
+  mapcap.textContent=`[ driving the loop · ${kmIn(d)} km ]`;}
+function fillCard(k){const i=stops[k],s=data.spots[i];
+  document.getElementById("c-cam").src=s.storm_cam; document.getElementById("c-lab").textContent=`Spot ${i+1} of ${data.n}, ${i===window.heroIdx?"the spot from the opening":"one of the three stops"}.`;
+  document.getElementById("c-storm").textContent=fmt(s.storm_m,s.storm_capped); document.getElementById("c-clear").textContent=fmt(s.clear_m,s.clear_capped);}
+function arrive(k){carTween=null;placeCar(carD);fillCard(k);callout.classList.add("on"); setLabels(true); mapcap.textContent=`[ ${kmIn(carD)} km in · stop ${k+1} of 3 ]`;}
+// beat 0, 1, 2: drive to that stop (one timed move, 0.5 to 0.9 s, cubic-bezier(0.77, 0, 0.175, 1)); beat 3: the whole loop, free map
+function applyDriveBeat(b,anim){
+  if(carTween){carTween.kill();carTween=null;}
+  if(b===DB.length-1){
+    if(!free){free=true;zoomedOut=true;driveEl.classList.add("free");map.scrollZoom.enable();map.dragPan.enable();map.touchZoomRotate.enable();map.doubleClickZoom.enable();map.keyboard.disable();map.fitBounds(bounds(),{padding:fitPad(),duration:anim?900:0,essential:true});shown=1e9;paintSpots();carMarker.remove();}
+    if(!freeCallout) callout.classList.remove("on"); mapui.classList.add("on"); mapcap.textContent="[ the whole loop · 271 spots ]"; setLabels(true); return;
+  }
+  if(free){free=false;zoomedOut=false;freeCallout=false;driveEl.classList.remove("free");driveEl.classList.remove("sheet");map.dragPan.disable();map.touchZoomRotate.disable();map.scrollZoom.disable();map.doubleClickZoom.disable();mapui.classList.remove("on");carMarker.addTo(map);lastShown=-1;}
+  const dest=cum[spotIdx[stops[b]]]; if(carD===null) carD=cum[Math.min(...spotIdx)];
+  callout.classList.remove("on");
+  if(!anim||Math.abs(dest-carD)<1){placeCar(dest);arrive(b);return;}
+  setLabels(false);
+  const o={d:carD}, dur=clamp(0.4+Math.abs(dest-carD)/3000,0.5,0.9); let shownCard=false;
+  carTween=gsap.to(o,{d:dest,duration:dur,ease:legEase,onUpdate:function(){placeCar(o.d);if(!shownCard&&this.progress()>0.7){shownCard=true;fillCard(b);callout.classList.add("on");}},onComplete:()=>arrive(b)});
+}
+// ---------- try it yourself: the real per-size results at the three stops ----------
+const TRY={k:0,size:4};   // opens on spot 42, the spot from the opening
+function tryDraw(){
+  if(!data) return;
+  const spot=data.spots[stops[TRY.k]], sizes=data.sizes_m, m=sizes[TRY.size];
+  document.getElementById("pushval").textContent=`${m}\u00a0m`; document.getElementById("pushsay").textContent=about(m);
+  document.querySelectorAll(".try .spots button").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.k===TRY.k));
+  for(const [day,id,key] of [["storm","p-storm","storm_ok"],["clear","p-clear","clear_ok"]]){
+    const fig=document.getElementById(id), ok=spot[key]?spot[key][TRY.size]:null, pass=ok!==null&&ok>=7;
+    fig.querySelector("img").src=spot[day+"_lidar"]; fig.classList.toggle("pass",pass); fig.classList.toggle("fail",ok!==null&&!pass);
+    const r=m*PX_PER_M*2, col=pass?"#5fd39a":"#ff6b6b";
+    let svg=`<circle cx="200" cy="200" r="${r}" fill="none" stroke="${col}" stroke-width="2" stroke-opacity=".9"/>`;
+    for(let i=0;i<8;i++){const a=i*Math.PI/4; svg+=pass?`<circle cx="${200+r*Math.cos(a)}" cy="${200-r*Math.sin(a)}" r="7" fill="${col}" stroke="#0b0d10" stroke-width="1.5"/>`:`<circle cx="${200+r*Math.cos(a)}" cy="${200-r*Math.sin(a)}" r="6" fill="#0b0d10" stroke="${col}" stroke-width="2.5"/>`;}
+    svg+=`<rect x="193" y="186" width="14" height="28" rx="3" fill="none" stroke="${ink()}" stroke-width="1.5"/>`;
+    fig.querySelector("svg").innerHTML=svg;
+    document.getElementById(day==="storm"?"r-storm":"r-clear").textContent=ok===null?"":`recovered in ${ok} of 8 directions${day==="storm"&&RECHECK_IDS.includes(spot.id)?". Storm value under recheck (see The limits)":""}`;
+  }
+}
+document.getElementById("push").addEventListener("input",e=>{TRY.size=+e.target.value;tryDraw();});
+document.querySelectorAll(".try .spots button").forEach(b=>b.onclick=()=>{TRY.k=+b.dataset.k;tryDraw();});
+// the beat triggers go last so every variable they reach is defined
+heroST=ScrollTrigger.create({trigger:hero,start:"top top",end:"bottom bottom",onUpdate:()=>setHeroBeat(heroBeatAt()),onRefresh:()=>setHeroBeat(heroBeatAt())});
+driveST=ScrollTrigger.create({trigger:driveEl,start:"top top",end:"bottom bottom",onEnter:()=>setDriveBeat(driveBeatAt()),onUpdate:()=>setDriveBeat(driveBeatAt()),
+  onRefresh:t=>{if(t.isActive||t.progress>=1)setDriveBeat(driveBeatAt());}});
+window.heroStorm=1; window.heroClear=3;
+fetch("data/route.json?v=4").then(r=>r.json()).then(j=>{
+  data=j; route=j.route;
+  cum=[0]; for(let i=1;i<route.length;i++){const dy=(route[i][0]-route[i-1][0])*111320, dx=(route[i][1]-route[i-1][1])*111320*Math.cos(route[i][0]*Math.PI/180); cum.push(cum[i-1]+Math.hypot(dx,dy));}
+  spotIdx=j.spots.map(s=>{let b=0,bd=1e18;for(let i=0;i<route.length;i++){const dy=(route[i][0]-s.lat)*111320,dx=(route[i][1]-s.lon)*80400,dd=dx*dx+dy*dy;if(dd<bd){bd=dd;b=i;}}return b;});
+  stops=STOP_IDS.map(id=>j.spots.findIndex(s=>s.id===id)).filter(k=>k>=0);
+  // jump buttons: the drive's three stops. The data's "three most affected" (spots 2, 3, 16, storm 0 m) turned out to be a
+  // matcher artifact (notes/critic-most-affected.md), so the page does not claim a most-affected list until the sweep is rerun.
+  window.mostAffected=[];
+  const jumpHtml=stops.map(k=>`<button data-i="${k}">Spot ${k+1}</button>`).join(" ");
+  document.getElementById("jump-btns").innerHTML=jumpHtml; document.getElementById("c-jump").innerHTML=jumpHtml;
+  document.querySelectorAll("#jump-btns button,#c-jump button").forEach(b=>b.onclick=()=>{const y=driveBeatY(DB.length-1); /* the free map with the whole loop, where the callout names the spot */ if(Math.abs(scrollY-y)>40) jumpTo(y); selectSpot(+b.dataset.i,{pan:true,scroll:false});});
+  buildPlan(); tryDraw();
+  if(map) placeStart();
+  if(j.hero){window.heroStorm=j.hero.storm_m;window.heroClear=j.hero.clear_m;
+    document.getElementById("b3-clear").textContent=j.hero.clear_capped?"3\u00a0m":`${j.hero.clear_m}\u00a0m`; document.getElementById("b3-say").textContent=about(j.hero.clear_capped?3:j.hero.clear_m);
+    document.getElementById("a-here").textContent=`${j.hero.storm_m}\u00a0m`; document.getElementById("a-typ").textContent=`${j.storm_median_m}\u00a0m`; document.getElementById("a-clear").textContent=j.clear_median_m>=3?"3\u00a0m or more":`${j.clear_median_m}\u00a0m`;
+    document.getElementById("b4-say").textContent=about(j.hero.storm_m);
+    window.heroIdx=j.spots.findIndex(s=>s.id===j.hero.id); if(heroIdx>=0) document.getElementById("b5-lab").textContent=`[ the storm, spot ${heroIdx+1} on the map ]`;
+  document.getElementById("b4-storm").textContent=`${j.hero.storm_m}\u00a0m`; GUESS.here=j.hero.storm_m; GUESS.typical=j.storm_median_m; if(window.heroScene&&heroBeat>=2) heroScene(heroBeat,false);
+    const k=j.spots.findIndex(s=>s.id===j.hero.id); if(k>=0){selected=k;show(j.spots[k],k,false);}}
+  // the clip starts at spot 002_011 (scripts/render_realstreet.py, start 1611678399605530 us), a little before the opening spot: its burned-in values are that spot's
+  {const c=j.spots.findIndex(s=>s.id==="002_011"); if(c>=0){const s=j.spots[c]; document.getElementById("clipnote").textContent=`It starts at spot ${c+1}, a little before the opening spot: ${fmt(s.storm_m,s.storm_capped)} in the storm, ${fmt(s.clear_m,s.clear_capped)} with no snow.`;}}
+  readScroll(); if(driveBeat<0&&(driveST.isActive||driveST.progress>=1)) setDriveBeat(driveBeatAt());
+});
+addEventListener("themechange",()=>{if(selected>=0&&data)show(data.spots[selected],selected,false);});   // the map keeps its dark style in both themes
+</script>
+
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+// ---------- the hero scan: two real scans (storm, no snow) at the same spot, 70,000 points each ----------
+// Beats: 0 dashcam, 1 the scan in ink then the snow specks turn blue, 2 crossfade to the no-snow scan and a 3 m ring draws,
+// 3 the guess (same view), 4 back to the storm and the ring shrinks to this spot's room. Each move plays once, timed, on entering the beat.
+// The car: ?car=mesh (the clip's body, smooth-shaded) or ?car=arrow (just the ring and a heading arrow).
+const kick=()=>{for(const ev of ["scroll","wheel","touchstart","keydown","pointerdown"]) removeEventListener(ev,kick); startHero();};
+for(const ev of ["scroll","wheel","touchstart","keydown","pointerdown"]) addEventListener(ev,kick,{passive:true,once:true});
+setTimeout(()=>{if("requestIdleCallback" in window) requestIdleCallback(kick,{timeout:4000}); else kick();},8000);
+let started=false;
+async function startHero(){
+if(started) return; started=true;
+const THREE=await import("three");
+const {mergeVertices}=await import("three/addons/utils/BufferGeometryUtils.js");
+const CAR=(new URLSearchParams(location.search).get("car"))||"mesh", LOOK=(new URLSearchParams(location.search).get("look"))||"height";   // ?look=old: the first look (one ink, 9 px cap, glow ring) for the side by side
+const canvas=document.getElementById("cloud"), stageEl=document.getElementById("stage");
+const phone=matchMedia("(max-width:699px)").matches;
+// GPU tier (detect-gpu, pmndrs): tier 0 or 1, no WebGL, or a lost context shows the still instead of the point cloud; the point budget follows the tier
+let tier=2; try{const {getGPUTier}=await import("https://unpkg.com/detect-gpu@5.0.70/dist/detect-gpu.esm.js"); const g=await getGPUTier(); if(Number.isFinite(g.tier)) tier=g.tier; window.gpuTier=g;}catch(e){}
+const POINTS=tier>=3?150000:(phone?40000:80000);
+const nogl=()=>{stageEl.classList.add("nogl");};
+if(tier<=1||new URLSearchParams(location.search).get("gl")==="off"){nogl();return;}
+canvas.addEventListener("webglcontextlost",e=>{e.preventDefault();nogl();});
+const THEMES={dark:{ink:[0.8,0.85,0.9],acc:[0.36,0.66,1.0],bg:0x0b0d10,ring:0xdfe5e8,racc:0x8ec5ff},light:{ink:[0.16,0.21,0.25],acc:[0.11,0.37,0.65],bg:0xdfe5e8,ring:0x28363e,racc:0x1b5fa6}};
+let TH=THEMES.dark;   // the point-cloud scene is always dark: on the light page it sits framed inside the page (the points only read on dark)
+const sprite=(()=>{const c=document.createElement("canvas");c.width=c.height=64;const g=c.getContext("2d");
+  const r=g.createRadialGradient(32,32,0,32,32,32);r.addColorStop(0,"rgba(255,255,255,1)");r.addColorStop(0.35,"rgba(255,255,255,.9)");r.addColorStop(0.7,"rgba(255,255,255,.25)");r.addColorStop(1,"rgba(255,255,255,0)");
+  g.fillStyle=r;g.fillRect(0,0,64,64);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;})();
+async function load(name){
+  const buf=await (await fetch(`data/scan_${name}.bin?v=3`)).arrayBuffer();
+  const nAll=buf.byteLength/8, dv=new DataView(buf), step=Math.max(1,nAll/POINTS), n=Math.min(nAll,Math.floor(nAll/step));
+  const pos=new Float32Array(n*3), base=new Float32Array(n), snow=new Uint8Array(n);
+  for(let i=0;i<n;i++){const o=Math.floor(i*step)*8;           // every step-th point, a uniform thinning; x forward, y left, z up in cm -> scene (y, z, -x) in m
+    pos[i*3]=dv.getInt16(o+2,true)/100; pos[i*3+1]=dv.getInt16(o+4,true)/100; pos[i*3+2]=-dv.getInt16(o,true)/100;
+    base[i]=dv.getUint8(o+6)/255; snow[i]=dv.getUint8(o+7);}
+  const g=new THREE.BufferGeometry(); g.setAttribute("position",new THREE.BufferAttribute(pos,3)); g.setAttribute("color",new THREE.BufferAttribute(new Float32Array(n*3),3));
+  const old=LOOK==="old", m=new THREE.PointsMaterial({size:old?0.13:0.1,map:sprite,alphaTest:0.02,vertexColors:true,sizeAttenuation:true,transparent:true,opacity:1,depthWrite:false,blending:THREE.AdditiveBlending});
+  m.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace("#include <fog_vertex>","#include <fog_vertex>\n gl_PointSize=min(gl_PointSize,"+((old?9:2.4)*DPR).toFixed(1)+");");};   // 1 to 2 px points so the scan rings read; the old look capped at 9 px
+  // the snow gets its own, slightly bigger sprite so the storm still reads at 1 to 2 px street points
+  const ms=old?m:new THREE.PointsMaterial({size:0.2,map:sprite,alphaTest:0.02,vertexColors:true,sizeAttenuation:true,transparent:true,opacity:1,depthWrite:false,blending:THREE.AdditiveBlending});
+  if(!old) ms.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace("#include <fog_vertex>","#include <fog_vertex>\n gl_PointSize=min(gl_PointSize,"+(4.5*DPR).toFixed(1)+");");};
+  // the points flagged as snow (lonely points above the road, flagged when the file was built) go in a second object so they can be hidden
+  const idxSnow=[], idxRest=[]; for(let i=0;i<n;i++)(snow[i]?idxSnow:idxRest).push(i);
+  g.setIndex(idxRest);
+  const gs=new THREE.BufferGeometry(); gs.setAttribute("position",g.attributes.position); gs.setAttribute("color",g.attributes.color); gs.setIndex(idxSnow);
+  const pts=new THREE.Points(g,m); pts.userData={base,snow,n,tint:-1,theme:null,snowObj:new THREE.Points(gs,ms),snowCount:idxSnow.length}; tint(pts,0); return pts;
+}
+function tint(pts,amt){
+  const {base,snow,n}=pts.userData; if(Math.abs(pts.userData.tint-amt)<0.01&&pts.userData.theme===TH) return; pts.userData.tint=amt; pts.userData.theme=TH;
+  // light theme: vertex colours are linear, the page colour is sRGB, so convert both (pow 2.2) or the points come out paler than the page
+  const col=pts.geometry.attributes.color.array, pos=pts.geometry.attributes.position.array, byHeight=LOOK!=="old";
+  for(let i=0;i<n;i++){const s=snow[i]?amt:0, f=base[i];
+    // colour by height: the road dim, 3 m up full ink (the legend top left says so); brightness still from the return; snow turns to the accent
+    const h=byHeight?Math.max(0,Math.min(1,(pos[i*3+1]+0.3)/3.3)):1, g=byHeight?(0.5+0.5*h)*(0.62+0.38*f):f;
+    for(let c=0;c<3;c++){const inkc=TH.ink[c]+(TH.acc[c]-TH.ink[c])*s; col[i*3+c]=inkc*(snow[i]?Math.max(g,0.95*s):g);}}
+  pts.geometry.attributes.color.needsUpdate=true;
+}
+const DPR=Math.min(devicePixelRatio,phone?1.5:2);
+let renderer; try{renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:"high-performance"});}catch(e){nogl();return;}
+renderer.setPixelRatio(DPR);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(TH.bg);
+const cam=new THREE.PerspectiveCamera(50,1,0.5,300);
+// the ring: a flat band on the road at true scale (the old look had a thin line plus a glow)
+const OLD=LOOK==="old";
+const ringMat=new THREE.MeshBasicMaterial({color:0x8ec5ff,transparent:true,opacity:0,depthWrite:false,depthTest:!OLD,side:THREE.DoubleSide});   // on the road, under the car (the old look drew it through the roof)
+const ring=new THREE.Mesh(new THREE.RingGeometry(OLD?0.965:0.93,1.0,160),ringMat); ring.rotation.x=-Math.PI/2; ring.position.y=0.04; scene.add(ring);
+// a faint 10 m ground grid, so distances read
+if(!OLD){const grid=new THREE.GridHelper(200,20,0xdfe5e8,0xdfe5e8); grid.material.transparent=true; grid.material.opacity=0.07; grid.material.depthWrite=false; grid.position.y=-0.02; scene.add(grid);}
+const ringLab=document.getElementById("ringlab"), v3=new THREE.Vector3();
+const glowGeo=new THREE.RingGeometry(0.86,1.1,160); {const a=glowGeo.attributes.position, col=new Float32Array(a.count*3);
+  for(let i=0;i<a.count;i++){const r=Math.hypot(a.getX(i),a.getY(i)); const w=1-Math.min(1,Math.abs(r-0.99)/0.12); col[i*3]=col[i*3+1]=col[i*3+2]=w*w;}
+  glowGeo.setAttribute("color",new THREE.BufferAttribute(col,3));}
+const glowMat=new THREE.MeshBasicMaterial({color:0x8ec5ff,vertexColors:true,transparent:true,opacity:0,depthWrite:false,depthTest:false,side:THREE.DoubleSide});
+const glow=new THREE.Mesh(glowGeo,glowMat); glow.rotation.x=-Math.PI/2; glow.position.y=0.03; scene.add(glow); ring.renderOrder=10; glow.renderOrder=9;
+function setBlend(){}
+setBlend();
+scene.add(new THREE.AmbientLight(0xdfe5e8,0.6));
+const key=new THREE.DirectionalLight(0xffffff,1.0); key.position.set(-0.25,0.85,-0.45); scene.add(key);
+const fill=new THREE.DirectionalLight(0x8ec5ff,0.15); fill.position.set(0.6,0.3,0.7); scene.add(fill);
+if(CAR==="arrow"){
+  // option B: no car body; a small heading arrow on the road where the lidar sits, pointing the way the car drives
+  const shape=new THREE.Shape(); shape.moveTo(0,-0.6); shape.lineTo(0.42,0.5); shape.lineTo(0,0.25); shape.lineTo(-0.42,0.5); shape.closePath();
+  const arrow=new THREE.Mesh(new THREE.ShapeGeometry(shape),new THREE.MeshBasicMaterial({color:TH.ring,transparent:true,opacity:.9,side:THREE.DoubleSide,depthTest:false}));
+  arrow.rotation.x=-Math.PI/2; arrow.rotation.z=Math.PI; arrow.position.y=0.05; arrow.renderOrder=11; scene.add(arrow);
+} else {
+  // option A: the clip's car (scripts/car_mesh.py), vertices merged and normals smoothed so the body reads as one surface
+  fetch("data/car.bin?v=2").then(r=>r.arrayBuffer()).then(buf=>{
+    const n=Math.floor(buf.byteLength/(9*4*2+1));
+    const P=new Float32Array(buf,0,n*9), M=new Uint8Array(buf,n*72,n);
+    const mats=[new THREE.MeshStandardMaterial({color:0x9aa3ad,metalness:.3,roughness:.5}),
+                new THREE.MeshStandardMaterial({color:0x5c6670,metalness:.05,roughness:.55}),
+                new THREE.MeshStandardMaterial({color:0x1e2024,metalness:0,roughness:.9})];
+    for(let k=0;k<3;k++){
+      const idx=[]; for(let i=0;i<n;i++) if(M[i]===k) idx.push(i);
+      if(!idx.length) continue;
+      const pos=new Float32Array(idx.length*9);
+      idx.forEach((i,j)=>{for(let v=0;v<3;v++){const x=P[i*9+v*3],y=P[i*9+v*3+1],z=P[i*9+v*3+2]; pos[j*9+v*3]=y; pos[j*9+v*3+1]=z; pos[j*9+v*3+2]=-x;}});
+      let g=new THREE.BufferGeometry(); g.setAttribute("position",new THREE.BufferAttribute(pos,3));
+      if(k!==0){g=mergeVertices(g,1e-3);} g.computeVertexNormals();           // the body keeps its edges (flat shading); glass and tyres are smooth (flat glass showed a sawtooth along the roof line)
+      const mesh=new THREE.Mesh(g,mats[k]); mesh.material.side=THREE.DoubleSide; mesh.material.flatShading=k===0; if(k===1){mesh.material.polygonOffset=true;mesh.material.polygonOffsetFactor=2;mesh.material.polygonOffsetUnits=2;} mesh.material.needsUpdate=true; scene.add(mesh);
+    }
+    const sh=new THREE.Mesh(new THREE.CircleGeometry(1,48),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.4,depthWrite:false}));
+    sh.rotation.x=-Math.PI/2; sh.scale.set(1.15,2.5,1); sh.position.y=0.02; scene.add(sh);
+  }).catch(()=>{});
+}
+let storm=null, clear=null, t0=performance.now();
+function size(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);cam.aspect=w/h; if(w>h&&w>=900) cam.setViewOffset(w,h,-Math.round(w*0.2),0,w,h); else cam.clearViewOffset(); /* the caption card sits bottom left, so the scene is pushed right */ cam.updateProjectionMatrix();}
+addEventListener("resize",size); size();
+let dragX=0, dragging=false, lastX=0;
+canvas.addEventListener("pointerdown",e=>{dragging=true;lastX=e.clientX;});
+addEventListener("pointermove",e=>{if(dragging){dragX+=(e.clientX-lastX)*0.005;lastX=e.clientX;}});
+addEventListener("pointerup",()=>dragging=false);
+
+// the scene state: every beat has an end state; entering a beat forward tweens there (camera 0.9 s), entering backward sets it
+const S={h:7.5,dist:21,ly:1,ax:-6,fov:50,clear:0,tint:0,r:0,ro:0,orb:0,rc:0}; let rTarget=0;
+const CAMK=["h","dist","ly","ax","fov","orb"];
+function target(b){const t=innerHeight>innerWidth, R0=window.heroClear||3, R1=window.heroStorm||1;
+  return [{h:t?6.5:7.5,dist:t?17:21,ly:1,ax:-6,fov:50,clear:0,tint:0,r:0,ro:0,orb:0,rc:0},
+          {h:t?4.2:2.3,dist:t?16:12,ly:t?0.4:1,ax:t?0.5:-6,fov:50,clear:0,tint:1,r:0,ro:0,orb:t?1.0:0.7,rc:0},
+          {h:t?14.5:15,dist:t?13:7,ly:0.2,ax:0,fov:t?50:42,clear:1,tint:1,r:R0,ro:1,orb:1.3,rc:0},
+          {h:t?14.5:15,dist:t?13:7,ly:0.2,ax:0,fov:t?50:42,clear:1,tint:1,r:R0,ro:1,orb:1.5,rc:0},
+          {h:t?14.5:15.5,dist:t?13:8,ly:0.2,ax:0,fov:t?50:42,clear:0,tint:1,r:R1,ro:1,orb:2.1,rc:1}][b];}
+const pick=(o,ks)=>Object.fromEntries(ks.map(k=>[k,o[k]]));
+window.heroScene=(b,anim)=>{gsap.killTweensOf(S); const T=target(b); rTarget=T.r; if(!anim){Object.assign(S,T);return;}
+  // every beat tweens its whole state (so a jump from any beat lands right); the staging: the snow lights 0.4 s in, the 3 m ring draws 0.5 s in, the storm ring shrinks 0.3 s in
+  gsap.to(S,{...pick(T,CAMK),duration:.9,ease:legEase});
+  gsap.to(S,{tint:T.tint,clear:T.clear,ro:T.ro,rc:T.rc,duration:.6,ease:"power2.inOut",delay:b===1?.4:0});
+  gsap.to(S,{r:T.r,duration:.7,ease:b===2?"power2.out":legEase,delay:b===2?.5:.3});
+};
+heroScene(Math.max(0,heroBeat),false);
+const ringA=new THREE.Color(TH.ring), ringB=new THREE.Color(TH.racc), ringC=new THREE.Color();
+frameHooks.push(now=>{
+  if(!heroVisible) return;
+  const t=(now-t0)/1000, orbit=t*0.04+S.orb+dragX;
+  if(Math.abs(cam.fov-S.fov)>0.05){cam.fov=S.fov;cam.updateProjectionMatrix();}
+  cam.position.set(Math.sin(orbit)*S.dist,S.h,Math.cos(orbit)*S.dist); cam.lookAt(0,S.ly,S.ax);
+  if(storm){storm.material.opacity=1-S.clear;storm.userData.snowObj.material.opacity=1-S.clear;storm.visible=storm.material.opacity>0.01;storm.userData.snowObj.visible=storm.visible&&!snowHidden;tint(storm,S.tint);}
+  if(clear){clear.material.opacity=S.clear;clear.visible=S.clear>0.01;clear.userData.snowObj.visible=clear.visible;tint(clear,0);}
+  const r=Math.max(S.r,0.01); ring.scale.set(r,r,1); glow.scale.set(r,r,1);
+  ringMat.opacity=OLD?S.ro:S.ro*0.55; glowMat.opacity=OLD?S.ro*0.7:0; ringC.copy(ringA).lerp(ringB,S.rc); ringMat.color.copy(ringC); glowMat.color.copy(ringC);
+  // the ring's size, written at its edge on the visual
+  if(S.ro>0.5&&rTarget>0.05&&Math.abs(S.r-rTarget)<0.01){v3.set(S.r*0.72,0.05,-S.r*0.69).project(cam); const w=canvas.clientWidth,h=canvas.clientHeight; ringLab.style.left=((v3.x+1)/2*w)+"px"; ringLab.style.top=((1-v3.y)/2*h)+"px"; ringLab.textContent=rTarget+"\u00a0m"; ringLab.classList.add("on");} else ringLab.classList.remove("on");
+  renderer.render(scene,cam);
+});
+Promise.all([load("storm"),load("clear")]).then(([a,b])=>{storm=a;clear=b;scene.add(a);scene.add(a.userData.snowObj);scene.add(b);scene.add(b.userData.snowObj);b.visible=false;b.userData.snowObj.visible=false;
+  const tg=document.getElementById("snowtoggle"), cap=document.getElementById("snowcap");
+  window.setSnowHidden=v=>{snowHidden=v;tg.setAttribute("aria-pressed",v);stageEl.classList.toggle("snowoff",v);tg.textContent=v?"Show the snow":"Hide the snow";
+    cap.textContent=v?`Hiding the ${a.userData.snowCount.toLocaleString("en-CA")} points flagged as snow in the air (lonely points above the road). The street behind is untouched.`:"";cap.classList.toggle("on",v);};
+  tg.onclick=()=>setSnowHidden(!snowHidden); scansReady=true;
+  // warm the shaders for both scans now, off the scroll path, so the first switch to the no-snow scan does not stall a frame
+  try{b.visible=true;b.userData.snowObj.visible=true;renderer.compile(scene,cam);renderer.render(scene,cam);b.visible=false;b.userData.snowObj.visible=false;}catch(e){}
+}).catch(()=>{});
+}
 </script>
 </body>
 </html>

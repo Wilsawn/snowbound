@@ -4,13 +4,28 @@ Data
 - Boreas dataset, University of Toronto, CC BY 4.0: https://www.boreas.utias.utoronto.ca/ (license: https://creativecommons.org/licenses/by/4.0/)
 - The study this builds on: Burnett et al., arXiv 2203.10174: https://arxiv.org/abs/2203.10174
 
-The page
-- The scans, the car, the push rings, the result bars and the loop are drawn on HTML canvas and SVG with no library; every line in docs/index.html is written for this page.
+Map
+- MapLibre GL JS 4.7.1, BSD-3-Clause: https://github.com/maplibre/maplibre-gl-js
+- OpenFreeMap vector tiles (free, no key): https://openfreemap.org ; data © OpenStreetMap contributors, ODbL: https://www.openstreetmap.org/copyright
+- Our own style (roads only, our colours) is written in docs/index.html, function mapStyle().
+
+Motion and 3D
+- GSAP 3.12.5 with ScrollTrigger, "Standard No Charge GSAP License" (Webflow), free for commercial use: https://gsap.com/community/standard-license/
+- three.js 0.160.0 (the point clouds, the car), MIT: https://github.com/mrdoob/three.js
+
+Techniques copied (ideas, not code; every line in docs/index.html is written for this page)
+- Split Text and Scroll Reveal, React Bits (MIT plus Commons Clause v1.0): https://reactbits.dev/text-animations/split-text and https://reactbits.dev/text-animations/scroll-reveal ; used for the word-by-word headline lift and the question lighting up.
+- Sticky Scroll Reveal, Aceternity UI (Aceternity licence: free in end products, no redistribution as a template): https://ui.aceternity.com/components/sticky-scroll-reveal ; used for the pinned drive with the card that appears once the map settles.
+- Number Ticker, Magic UI (MIT): https://magicui.design/docs/components/number-ticker ; used for the stat row count-up.
+- Codrops "How to Build Cinematic 3D Scroll Experiences with GSAP" (Nov 2025), repo MIT: https://github.com/JosephASG/codrops-cinematic-scroll-animations ; the idea of scrubbing a three.js camera and text with ScrollTrigger, and soft additive point sprites.
+- 21st.dev: Stats Counter Block (no licence shown) and Expand Map (licence unknown) were looked at; nothing copied.
+
+Weather
+- The live Toronto temperature in the header comes from Open-Meteo (free, no key, CC BY 4.0): https://open-meteo.com ; it is decoration, separate from the study data.
+
+Tools
 - detect-gpu 5.0.70 (device tier for the point count and the still fallback), MIT: https://github.com/pmndrs/detect-gpu
-- Type: Familjen Grotesk and IBM Plex Mono, SIL Open Font License, served by Google Fonts.
-- The dashcam frames and the twelve-second clip are from the Boreas camera; the lidar views are drawn from the Boreas scans with only the car's own body (within 3 m) removed.
 
-Checks
-- Frame-rate, scroll recordings and Lighthouse: Chromium through Playwright, and Google Lighthouse, Apache-2.0.
-
-Not affiliated with the University of Toronto or any car company.
+Type and tools
+- Switzer by Indian Type Foundry via Fontshare, ITF Free Font License: https://www.fontshare.com/fonts/switzer
+- Frame-rate and Lighthouse checks: Google Chrome (headless) and Lighthouse, Apache-2.0.

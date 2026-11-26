@@ -4,7 +4,7 @@ Does snow shrink a self-driving car's room for error? A test on a real Toronto s
 
 ## The result
 
-Snow shrinks a self-driving car's room for error. Room for error is the biggest push off its map a car's position guess can take and still find its way back. At 271 spots on a 20 m grid along 7.4 km of a 7.9 km north Toronto loop (a spot was kept only where both drives had a scan, so they sit 20 to 40 m apart), on both days, I pushed the guess off on purpose (0.25 m up to 3 m, in 8 directions, with a 5 degree turn added) and let the scan matcher slide the scan back onto a map from two months earlier.
+Snow shrinks a self-driving car's room for error. Room for error is the biggest push off its map a car's position guess can take and still find its way back. At 271 spots on a 20 m grid along 7.4 km of a 7.9 km north Toronto loop (a spot was kept only where both drives had a scan, so they sit mostly 20 to 40 m apart), on both days, I pushed the guess off on purpose (0.25 m up to 3 m, in 8 directions, with a 5 degree turn added) and let the scan matcher slide the scan back onto a map from two months earlier.
 
 - Typical spot in the snowstorm (26 Jan 2021): 2.5 m. Typical spot with no snow falling (19 Jan 2021): 3 m+ (3 m was the biggest push tested, so 3 m+ means it never failed).
 - Snow cut the room for error at 111 of 271 spots. It hit hardest in segments 2 and 3 of the loop: 34 of their 41 spots were cut (typical storm 1.625 m and 2 m there, no snow 3 m+). It made no difference at 142 spots and widened the room at 18.
