@@ -45,6 +45,8 @@
   :root[data-theme="light"] .hdr{background:color-mix(in srgb,var(--page) 92%,transparent)}
   :root .hdr.ondark{--page:#0b0d10;--ink:#dfe5e8;--soft:rgba(223,229,232,.62);--dim:rgba(223,229,232,.28);--rule:rgba(223,229,232,.16);--acc:#8ec5ff;color:var(--ink);color-scheme:dark;background:color-mix(in srgb,#0b0d10 82%,transparent)}
   .hdr b{font-weight:400;font-size:var(--t1);letter-spacing:-.01em}
+  .lab.sec{font:300 14px/1.4 "Switzer","Helvetica Neue",Helvetica,system-ui,sans-serif;letter-spacing:0;display:inline-flex;align-items:center;gap:10px}
+  .lab.sec::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--acc);flex:none}
   .hdr .lab{white-space:nowrap;font-size:12px}
   .hdr .mid{text-align:center}
   .hdr .right{display:flex;justify-content:flex-end;gap:var(--s1);align-items:center}
@@ -306,17 +308,17 @@
   <div class="stage" id="stage">
     <canvas id="cloud" aria-label="A real lidar scan of a Toronto street in a snowstorm, turning slowly"></canvas>
     <div class="cam" id="cam"><video id="heroVideo" muted loop playsinline webkit-playsinline autoplay preload="metadata" aria-hidden="true"></video></div>
-    <div class="beat on" data-beat="0"><div class="card q"><span class="lab">[ the question ]</span>
+    <div class="beat on" data-beat="0"><div class="card q"><span class="lab sec">the question</span>
       <h1 id="h1">If a self-driving car loses track of where it is in a snowstorm, how far off can its guess be and still recover?</h1>
       <p class="answer">Here, in the storm, it snapped back from a push of <b id="a-here">1.5 m</b>. At a typical spot on the loop, <b id="a-typ">2.5 m</b>; with no snow falling, <span id="a-clear">3 m or more</span>.</p>
       <div class="links"><a href="#method">How I measured it</a><a href="#route">The numbers</a><a href="https://github.com/Wilsawn/snowbound" target="_blank" rel="noopener">GitHub</a></div>
     </div></div>
-    <div class="beat" data-beat="1"><div class="card"><span class="lab">[ what the lidar saw at that moment ]</span><p>Every point is a laser hit. <span class="snowline"><b>The blue specks are snow in the air.</b> The street is still there behind them.</span></p></div></div>
-    <div class="beat" data-beat="2"><div class="card"><span class="lab">[ same spot, a week earlier, no snow falling ]</span><p>I pushed its position guess <b id="b3-clear">3 m</b> off on purpose. It still found itself.</p><p class="why" id="b3-say"></p></div></div>
-    <div class="beat guess" data-beat="3"><div class="card"><span class="lab">[ your guess ]</span><p>Same spot, back in the storm. How far off can it start and still recover?</p>
+    <div class="beat" data-beat="1"><div class="card"><span class="lab sec">what the lidar saw at that moment</span><p>Every point is a laser hit. <span class="snowline"><b>The blue specks are snow in the air.</b> The street is still there behind them.</span></p></div></div>
+    <div class="beat" data-beat="2"><div class="card"><span class="lab sec">same spot, a week earlier, no snow falling</span><p>I pushed its position guess <b id="b3-clear">3 m</b> off on purpose. It still found itself.</p><p class="why" id="b3-say"></p></div></div>
+    <div class="beat guess" data-beat="3"><div class="card"><span class="lab sec">your guess</span><p>Same spot, back in the storm. How far off can it start and still recover?</p>
       <div class="choices" role="group" aria-label="Your guess"><button data-g="0.5" aria-pressed="false">0.5 m</button><button data-g="1.5" aria-pressed="false">1.5 m</button><button data-g="3" aria-pressed="false">3 m</button><button class="skip" id="guess-skip">skip</button></div>
       <p class="verdict" id="verdict" aria-live="polite"></p></div></div>
-    <div class="beat" data-beat="4"><div class="card"><span class="lab" id="b5-lab">[ the storm, same spot ]</span><p>The biggest push it recovered from here, its room for error, was <b class="huge" id="b4-storm">...</b></p><p class="why" id="b4-say"></p></div></div>
+    <div class="beat" data-beat="4"><div class="card"><span class="lab sec" id="b5-lab">the storm, same spot</span><p>The biggest push it recovered from here, its room for error, was <b class="huge" id="b4-storm">...</b></p><p class="why" id="b4-say"></p></div></div>
     <div class="scanlab lab" id="scanlab"><span>Velodyne Alpha Prime, 128 ch</span><span>Boreas, Toronto</span><span id="scantime"></span></div>
     <div class="legend3d lab" id="legend3d"><span>road</span><i></i><span>3 m up</span><span style="margin-left:8px"><b>&bull;</b> snow</span></div>
     <span class="ringlab lab" id="ringlab"></span>
@@ -331,7 +333,7 @@
 <main>
 <div class="wrap">
   <section class="thesis" id="route">
-    <span class="lab">[ 7.4 km, 271 spots on a 20 m grid ]</span><h2>Snow shrinks a self-driving car's room for error.</h2>
+    <span class="lab sec">7.4 km, 271 spots on a 20 m grid</span><h2>Snow shrinks a self-driving car's room for error.</h2>
     <div class="stats" id="stats">
       <div><div class="n"><span data-count="3">0</span><small>m+</small></div><span class="lab">no snow falling, typical spot</span></div>
       <div><div class="n acc"><span data-count="2.5" data-dec="1">0</span><small>m</small></div><span class="lab">snowstorm, typical spot</span></div>
@@ -347,7 +349,7 @@
   </section>
   <section class="row try" id="try">
     <div>
-      <span class="lab">[ try it yourself · real test results ]</span>
+      <span class="lab sec">try it yourself · real test results</span>
       <h3>Push the car's guess off. Does it snap back?</h3>
       <p>Pick a spot and a push. Each panel is that day's real scan from above, 16 m across; the ring is the push, the eight marks are where I pushed it. Real results, nothing simulated.</p>
       <div class="spots" role="group" aria-label="Spot"><button data-k="0" aria-pressed="true">Spot 42</button><button data-k="1" aria-pressed="false">Spot 90</button><button data-k="2" aria-pressed="false">Spot 117</button></div>
@@ -369,7 +371,7 @@
 <div class="drive" id="drive">
   <div class="stage">
     <div id="map" role="img" aria-label="Map of the loop; a marker drives the route and stops at three spots"></div>
-    <span class="mapcap lab" id="mapcap">[ driving the loop ]</span>
+    <span class="mapcap lab sec" id="mapcap">driving the loop</span>
     <div class="zoomui"><button id="z-out" aria-label="Zoom out">&minus;</button><button id="z-in" aria-label="Zoom in">+</button><button id="z-all">whole loop</button></div>
     <div class="maptip" id="maptip" aria-hidden="true"></div>
     <ul class="rail" id="drive-rail" aria-label="Stops"></ul>
@@ -392,16 +394,16 @@
 </div></section>
 <section class="clipsec" id="videosec">
   <div class="in">
-    <div><span class="lab">[ twelve seconds, both days ]</span><h3>Top: the car's camera. Bottom: its lidar at the same moment, the room for error drawn under the car.</h3><p class="sub" id="clipnote"></p><p class="sub">No sound. Tap to pause.</p></div>
+    <div><span class="lab sec">twelve seconds, both days</span><h3>Top: the car's camera. Bottom: its lidar at the same moment, the room for error drawn under the car.</h3><p class="sub" id="clipnote"></p><p class="sub">No sound. Tap to pause.</p></div>
     <div class="video"><video id="clip" data-src="media/part2.mp4" data-poster="media/part2_poster.webp" muted loop playsinline webkit-playsinline preload="none" aria-label="Twelve seconds of the drive, tap to play or pause"></video></div>
   </div>
 </section>
 <div class="wrap">
 
   <section class="row" id="method">
-    <div class="head"><span class="lab">[ how I measured it ]</span><h3>Push the guess off, let the matcher slide the scan back, count the recoveries.</h3><p class="sub" style="max-width:52ch">Engineers call this the convergence basin: the largest starting error from which the scan matcher (ICP) still finds the right pose.</p></div>
+    <div class="head"><span class="lab sec">how I measured it</span><h3>Push the guess off, let the matcher slide the scan back, count the recoveries.</h3><p class="sub" style="max-width:52ch">Engineers call this the convergence basin: the largest starting error from which the scan matcher (ICP) still finds the right pose.</p></div>
     <div>
-      <span class="lab">the steps</span>
+      <span class="lab sec">the steps</span>
       <ol>
         <li>Build a 3D map of the loop from a drive two months earlier in clear weather (26 November 2020), placing each scan with the car's recorded position.</li>
         <li>Take a scan from the storm, or from the no-snow day, and start it from a guess that is deliberately off: 0.25 m to 3 m, eight directions, with a 5 degree turn added.</li>
@@ -410,7 +412,7 @@
       </ol>
     </div>
     <div>
-      <span class="lab">the limits</span>
+      <span class="lab sec">the limits</span>
       <ol>
         <li>One storm drive and one no-snow drive, so this is a lead, not a law.</li>
         <li>3 m was the biggest push tried. 202 no-snow and 120 storm spots hit it, so the real gap is at least this big.</li>
@@ -424,8 +426,8 @@
   </section>
 
   <section class="row" id="built">
-    <div><span class="lab">[ what I learned ]</span><h3>Snow cuts the room for error, but not everywhere, and the test can fool you.</h3><p>At 111 of 271 spots the storm left less room; at 142 it made no difference. The matcher fooled me once, by sinking a storm scan until the snow sat on the road (The limits has the story). The last 400 m is hard on both days: that is the road, not the weather.</p><p><span class="lab">[ next ]</span><br>Find where it breaks: more storms, the speeds the no-snow car drove at, and the wider search window. Scripts, notes and every per-spot result are at <a href="https://github.com/Wilsawn/snowbound">github.com/Wilsawn/snowbound</a>.</p></div>
-    <div><span class="lab">[ built by ]</span><h3>Built by Wilsawn Dideh.</h3><p>Software engineer and community builder, Ottawa. I wrote the test in Python and scipy, and this page.</p><p class="ask" id="ask">Into autonomy and robotics. If you're building in that space, I'd love to chat.</p><div class="links"><a href="https://www.linkedin.com/in/wilsawn-dideh" target="_blank" rel="noopener">LinkedIn</a><a href="https://github.com/Wilsawn" target="_blank" rel="noopener">GitHub</a><a href="mailto:didehw@gmail.com">didehw@gmail.com</a></div></div>
+    <div><span class="lab sec">what I learned</span><h3>Snow cuts the room for error, but not everywhere, and the test can fool you.</h3><p>At 111 of 271 spots the storm left less room; at 142 it made no difference. The matcher fooled me once, by sinking a storm scan until the snow sat on the road (The limits has the story). The last 400 m is hard on both days: that is the road, not the weather.</p><p><span class="lab sec">next</span><br>Find where it breaks: more storms, the speeds the no-snow car drove at, and the wider search window. Scripts, notes and every per-spot result are at <a href="https://github.com/Wilsawn/snowbound">github.com/Wilsawn/snowbound</a>.</p></div>
+    <div><span class="lab sec">built by</span><h3>Built by Wilsawn Dideh.</h3><p>Software engineer and community builder, Ottawa. I wrote the test in Python and scipy, and this page.</p><p class="ask" id="ask">Into autonomy and robotics. If you're building in that space, I'd love to chat.</p><div class="links"><a href="https://www.linkedin.com/in/wilsawn-dideh" target="_blank" rel="noopener">LinkedIn</a><a href="https://github.com/Wilsawn" target="_blank" rel="noopener">GitHub</a><a href="mailto:didehw@gmail.com">didehw@gmail.com</a></div></div>
   </section>
   <footer>
     <div>
@@ -707,17 +709,17 @@ function kmIn(d){return ((d-cum[Math.min(...spotIdx)])/1000).toFixed(1);}
 function placeCar(d){carD=d;const [la,lo,i]=along(d);carMarker.setLngLat([lo,la]);map.jumpTo({center:[lo,la],zoom:14.2});shown=i;
   const nowMs=performance.now();
   if(shown!==lastShown&&map.getLayer("spots-dots")&&(nowMs-lastReveal>160||carTween===null)){lastShown=shown;lastReveal=nowMs;map.setPaintProperty("spots-dots","circle-opacity",["case",["<=",["get","ri"],shown],1,0]);map.setPaintProperty("spots-dots","circle-stroke-opacity",["case",["<=",["get","ri"],shown],1,0]);}
-  mapcap.textContent=`[ driving the loop · ${kmIn(d)} km ]`;}
+  mapcap.textContent=`driving the loop · ${kmIn(d)} km`;}
 function fillCard(k){const i=stops[k],s=data.spots[i];
   document.getElementById("c-cam").src=s.storm_cam; document.getElementById("c-lab").textContent=`Spot ${i+1} of ${data.n}, ${i===window.heroIdx?"the spot from the opening":"one of the three stops"}.`;
   document.getElementById("c-storm").textContent=fmt(s.storm_m,s.storm_capped); document.getElementById("c-clear").textContent=fmt(s.clear_m,s.clear_capped);}
-function arrive(k){carTween=null;placeCar(carD);fillCard(k);callout.classList.add("on"); setLabels(true); mapcap.textContent=`[ ${kmIn(carD)} km in · stop ${k+1} of 3 ]`;}
+function arrive(k){carTween=null;placeCar(carD);fillCard(k);callout.classList.add("on"); setLabels(true); mapcap.textContent=`${kmIn(carD)} km in · stop ${k+1} of 3`;}
 // beat 0, 1, 2: drive to that stop (one timed move, 0.5 to 0.9 s, cubic-bezier(0.77, 0, 0.175, 1)); beat 3: the whole loop, free map
 function applyDriveBeat(b,anim){
   if(carTween){carTween.kill();carTween=null;}
   if(b===DB.length-1){
     if(!free){free=true;zoomedOut=true;driveEl.classList.add("free");map.scrollZoom.enable();map.dragPan.enable();map.touchZoomRotate.enable();map.doubleClickZoom.enable();map.keyboard.disable();map.fitBounds(bounds(),{padding:fitPad(),duration:anim?900:0,essential:true});shown=1e9;paintSpots();carMarker.remove();}
-    if(!freeCallout) callout.classList.remove("on"); mapui.classList.add("on"); mapcap.textContent="[ the whole loop · 271 spots ]"; setLabels(true); return;
+    if(!freeCallout) callout.classList.remove("on"); mapui.classList.add("on"); mapcap.textContent="the whole loop · 271 spots"; setLabels(true); return;
   }
   if(free){free=false;zoomedOut=false;freeCallout=false;driveEl.classList.remove("free");driveEl.classList.remove("sheet");map.dragPan.disable();map.touchZoomRotate.disable();map.scrollZoom.disable();map.doubleClickZoom.disable();mapui.classList.remove("on");carMarker.addTo(map);lastShown=-1;}
   const dest=cum[spotIdx[stops[b]]]; if(carD===null) carD=cum[Math.min(...spotIdx)];
@@ -769,7 +771,7 @@ fetch("data/route.json?v=4").then(r=>r.json()).then(j=>{
     document.getElementById("b3-clear").textContent=j.hero.clear_capped?"3\u00a0m":`${j.hero.clear_m}\u00a0m`; document.getElementById("b3-say").textContent=about(j.hero.clear_capped?3:j.hero.clear_m);
     document.getElementById("a-here").textContent=`${j.hero.storm_m}\u00a0m`; document.getElementById("a-typ").textContent=`${j.storm_median_m}\u00a0m`; document.getElementById("a-clear").textContent=j.clear_median_m>=3?"3\u00a0m or more":`${j.clear_median_m}\u00a0m`;
     document.getElementById("b4-say").textContent=about(j.hero.storm_m);
-    window.heroIdx=j.spots.findIndex(s=>s.id===j.hero.id); if(heroIdx>=0) document.getElementById("b5-lab").textContent=`[ the storm, spot ${heroIdx+1} on the map ]`;
+    window.heroIdx=j.spots.findIndex(s=>s.id===j.hero.id); if(heroIdx>=0) document.getElementById("b5-lab").textContent=`the storm, spot ${heroIdx+1} on the map`;
   document.getElementById("b4-storm").textContent=`${j.hero.storm_m}\u00a0m`; GUESS.here=j.hero.storm_m; GUESS.typical=j.storm_median_m; if(window.heroScene&&heroBeat>=2) heroScene(heroBeat,false);
     const k=j.spots.findIndex(s=>s.id===j.hero.id); if(k>=0){selected=k;show(j.spots[k],k,false);}}
   // the clip starts at spot 002_011 (scripts/render_realstreet.py, start 1611678399605530 us), a little before the opening spot: its burned-in values are that spot's
