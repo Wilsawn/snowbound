@@ -20,9 +20,6 @@ Techniques copied (ideas, not code; every line in docs/index.html is written for
 - Codrops "How to Build Cinematic 3D Scroll Experiences with GSAP" (Nov 2025), repo MIT: https://github.com/JosephASG/codrops-cinematic-scroll-animations ; the idea of scrubbing a three.js camera and text with ScrollTrigger, and soft additive point sprites.
 - 21st.dev: Stats Counter Block (no licence shown) and Expand Map (licence unknown) were looked at; nothing copied.
 
-Weather
-- The live Toronto temperature in the header comes from Open-Meteo (free, no key, CC BY 4.0): https://open-meteo.com ; it is decoration, separate from the study data.
-
 Tools
 - detect-gpu 5.0.70 (device tier for the point count and the still fallback), MIT: https://github.com/pmndrs/detect-gpu
 
